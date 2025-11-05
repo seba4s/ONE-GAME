@@ -19,12 +19,22 @@ interface UserData {
 
 export default function HomePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'main' | 'game'>('login')
+  const [currentScreen, setCurrentScreen] = useState<'login' | 'main' | 'game'>('main')
   const [userData, setUserData] = useState<UserData | null>(null)
 
   const handleLogout = () => {
-    setCurrentScreen('login')
+    setCurrentScreen('main')
     setUserData(null)
+  }
+
+  const handlePlayClick = () => {
+    if (!userData) {
+      // Si no está logueado, mostrar login primero
+      setCurrentScreen('login')
+    } else {
+      // Si está logueado, ir directo al juego
+      setCurrentScreen('game')
+    }
   }
 
   return (
@@ -39,7 +49,7 @@ export default function HomePage() {
           <LoginScreen 
             onLoginSuccess={(data) => {
               setUserData(data)
-              setCurrentScreen('main')
+              setCurrentScreen('game')
             }} 
           />
         </div>
@@ -74,7 +84,7 @@ export default function HomePage() {
               <span className="glow glow-bottom"></span>
 
               <div className="flex flex-col gap-4 min-w-[320px] relative z-10">
-                <Button size="lg" className="glass-button glass-button-primary glass-button-large group" onClick={() => setCurrentScreen('game')}>
+                <Button size="lg" className="glass-button glass-button-primary glass-button-large group" onClick={handlePlayClick}>
                   <Play className="mr-2 transition-transform group-hover:scale-110 h-10 w-10" />
                   <span className="text-xl font-bold tracking-wide">JUGAR</span>
                 </Button>
