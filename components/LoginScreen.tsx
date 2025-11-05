@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Mail, Facebook, Apple } from "lucide-react"
+import { Mail, Facebook, Apple, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 
 interface LoginScreenProps {
@@ -11,9 +11,22 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-  const [activeTab, setActiveTab] = useState<"login" | "guest">("login")
+  const [activeTab, setActiveTab] = useState<"login" | "register" | "guest">("login")
   const [guestNickname, setGuestNickname] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Login form
+  const [loginEmail, setLoginEmail] = useState("")
+  const [loginPassword, setLoginPassword] = useState("")
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  
+  // Register form
+  const [registerEmail, setRegisterEmail] = useState("")
+  const [registerUsername, setRegisterUsername] = useState("")
+  const [registerPassword, setRegisterPassword] = useState("")
+  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("")
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
+  const [showRegisterPasswordConfirm, setShowRegisterPasswordConfirm] = useState(false)
 
   // Handle Guest Login
   const handleGuestLogin = () => {
@@ -24,13 +37,59 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     onLoginSuccess({ username: guestNickname, isGuest: true })
   }
 
-  // Handle Email Login
+  // Handle Email/Username Login
   const handleEmailLogin = async () => {
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      alert("Por favor completa todos los campos")
+      return
+    }
+    
     setIsLoading(true)
     try {
-      // Aquí irá tu código de autenticación con email
-      console.log("Email login clicked")
-      // Placeholder para tu código
+      // TODO: Aquí irá tu código de autenticación con email/username
+      console.log("Email login:", { email: loginEmail, password: loginPassword })
+      // Placeholder: Simular login exitoso
+      // onLoginSuccess({ username: loginEmail, isGuest: false })
+    } catch (error) {
+      console.error("Error:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Handle Registration
+  const handleRegister = async () => {
+    if (!registerEmail.trim() || !registerUsername.trim() || !registerPassword.trim() || !registerPasswordConfirm.trim()) {
+      alert("Por favor completa todos los campos")
+      return
+    }
+
+    if (registerUsername.trim().length < 3) {
+      alert("El nombre de usuario debe tener al menos 3 caracteres")
+      return
+    }
+
+    if (registerPassword !== registerPasswordConfirm) {
+      alert("Las contraseñas no coinciden")
+      return
+    }
+
+    if (registerPassword.trim().length < 6) {
+      alert("La contraseña debe tener al menos 6 caracteres")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      // TODO: Aquí irá tu código de registro
+      console.log("Register:", { email: registerEmail, username: registerUsername, password: registerPassword })
+      // Placeholder: Después del registro exitoso, ir a login
+      setActiveTab("login")
+      setRegisterEmail("")
+      setRegisterUsername("")
+      setRegisterPassword("")
+      setRegisterPasswordConfirm("")
+      alert("¡Registro exitoso! Inicia sesión con tus credenciales")
     } catch (error) {
       console.error("Error:", error)
     } finally {
@@ -103,12 +162,18 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </div>
 
         {/* Tab Buttons */}
-        <div className="tab-buttons">
+        <div className="tab-buttons-3">
           <button
             className={`tab-button ${activeTab === "login" ? "active" : ""}`}
             onClick={() => setActiveTab("login")}
           >
             INICIAR SESIÓN
+          </button>
+          <button
+            className={`tab-button ${activeTab === "register" ? "active" : ""}`}
+            onClick={() => setActiveTab("register")}
+          >
+            REGISTRARSE
           </button>
           <button
             className={`tab-button ${activeTab === "guest" ? "active" : ""}`}
@@ -123,17 +188,55 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           {/* Login Tab */}
           {activeTab === "login" && (
             <div className="login-section">
-              <h2 className="section-title">Elige tu método de acceso</h2>
+              <h2 className="section-title">Inicia sesión con tu cuenta</h2>
 
-              {/* Email Button */}
+              {/* Email Input */}
+              <div className="form-group">
+                <label className="form-label">Email o Usuario</label>
+                <Input
+                  type="text"
+                  placeholder="tu@email.com o usuario"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="glass-input form-input"
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="form-group">
+                <label className="form-label">Contraseña</label>
+                <div className="password-input-group">
+                  <Input
+                    type={showLoginPassword ? "text" : "password"}
+                    placeholder="Tu contraseña"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="glass-input form-input"
+                  />
+                  <button
+                    className="password-toggle"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  >
+                    {showLoginPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Email/Username Login Button */}
               <Button
                 className="auth-button email-button glass-button"
                 onClick={handleEmailLogin}
                 disabled={isLoading}
               >
                 <Mail className="w-5 h-5 mr-3" />
-                <span>Continuar con Email</span>
+                <span>Iniciar Sesión</span>
               </Button>
+
+              <div className="divider">O continúa con</div>
 
               {/* Google Button */}
               <Button
@@ -147,7 +250,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                <span>Continuar con Google</span>
+                <span>Google</span>
               </Button>
 
               {/* Facebook Button */}
@@ -157,7 +260,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 disabled={isLoading}
               >
                 <Facebook className="w-5 h-5 mr-3" />
-                <span>Continuar con Facebook</span>
+                <span>Facebook</span>
               </Button>
 
               {/* Apple Button */}
@@ -167,7 +270,134 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 disabled={isLoading}
               >
                 <Apple className="w-5 h-5 mr-3" />
-                <span>Continuar con Apple</span>
+                <span>Apple</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Register Tab */}
+          {activeTab === "register" && (
+            <div className="register-section">
+              <h2 className="section-title">Crea tu cuenta</h2>
+
+              {/* Email Input */}
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <Input
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
+                  className="glass-input form-input"
+                />
+              </div>
+
+              {/* Username Input */}
+              <div className="form-group">
+                <label className="form-label">Nombre de Usuario</label>
+                <Input
+                  type="text"
+                  placeholder="Tu usuario"
+                  value={registerUsername}
+                  onChange={(e) => setRegisterUsername(e.target.value)}
+                  className="glass-input form-input"
+                  maxLength={20}
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="form-group">
+                <label className="form-label">Contraseña</label>
+                <div className="password-input-group">
+                  <Input
+                    type={showRegisterPassword ? "text" : "password"}
+                    placeholder="Contraseña"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    className="glass-input form-input"
+                  />
+                  <button
+                    className="password-toggle"
+                    onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  >
+                    {showRegisterPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password Input */}
+              <div className="form-group">
+                <label className="form-label">Confirmar Contraseña</label>
+                <div className="password-input-group">
+                  <Input
+                    type={showRegisterPasswordConfirm ? "text" : "password"}
+                    placeholder="Confirma tu contraseña"
+                    value={registerPasswordConfirm}
+                    onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
+                    className="glass-input form-input"
+                  />
+                  <button
+                    className="password-toggle"
+                    onClick={() => setShowRegisterPasswordConfirm(!showRegisterPasswordConfirm)}
+                  >
+                    {showRegisterPasswordConfirm ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Register Button (use same style as login email button) */}
+              <Button
+                className="auth-button email-button glass-button"
+                onClick={handleRegister}
+                disabled={isLoading}
+              >
+                <Mail className="w-5 h-5 mr-3" />
+                <span>Crear Cuenta</span>
+              </Button>
+
+              <div className="divider">O regístrate con</div>
+
+              {/* Google Button */}
+              <Button
+                className="auth-button google-button glass-button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+              >
+                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Google</span>
+              </Button>
+
+              {/* Facebook Button */}
+              <Button
+                className="auth-button facebook-button glass-button"
+                onClick={handleFacebookLogin}
+                disabled={isLoading}
+              >
+                <Facebook className="w-5 h-5 mr-3" />
+                <span>Facebook</span>
+              </Button>
+
+              {/* Apple Button */}
+              <Button
+                className="auth-button apple-button glass-button"
+                onClick={handleAppleLogin}
+                disabled={isLoading}
+              >
+                <Apple className="w-5 h-5 mr-3" />
+                <span>Apple</span>
               </Button>
             </div>
           )}
@@ -445,6 +675,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .tab-buttons-3 {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 0.5rem;
+          background: rgba(0, 0, 0, 0.3);
+          padding: 0.5rem;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         .tab-button {
           padding: 0.75rem 1rem;
           border: none;
@@ -645,6 +885,117 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         :global(.glass-button:hover:not(:disabled)) {
           color: white;
           background: linear-gradient(90deg, hsl(var(--hue1) 29% 20% / 0.7), hsl(var(--hue1) 30% 22% / 0.7) 24% 32%, hsl(var(--hue1) 5% 10% / 0.2) 95%);
+        }
+
+        /* Form Styles */
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .form-label {
+          color: white;
+          font-weight: 600;
+          font-size: 0.875rem;
+          letter-spacing: 0.05em;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 0.75rem;
+          font-size: 0.95rem;
+          background: linear-gradient(to bottom, hsl(45 20% 20% / 0.2) 50%, hsl(45 50% 50% / 0.1) 180%);
+          border: 1px solid hsl(0 13% 18.5% / 0.5);
+          border-radius: 8px;
+          color: white;
+        }
+
+        .form-input::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-input:focus {
+          outline: none;
+          border-color: rgba(99, 102, 241, 0.7);
+          box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+          background: linear-gradient(to bottom, hsl(45 20% 25% / 0.3) 50%, hsl(45 50% 50% / 0.15) 180%);
+        }
+
+        .password-input-group {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .password-input-group .form-input {
+          margin-bottom: 0;
+          padding-right: 2.5rem;
+        }
+
+        .password-toggle {
+          position: absolute;
+          right: 0.75rem;
+          background: transparent;
+          border: none;
+          color: rgba(255, 255, 255, 0.6);
+          cursor: pointer;
+          transition: color 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .password-toggle:hover {
+          color: white;
+        }
+
+        .divider {
+          text-align: center;
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 0.875rem;
+          margin: 1rem 0;
+          position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          width: 40%;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.2);
+        }
+
+        .divider::before {
+          left: 0;
+        }
+
+        .divider::after {
+          right: 0;
+        }
+
+        .register-button {
+          width: 100%;
+          padding: 1rem;
+          font-size: 1rem;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          border-radius: 8px;
+          margin-top: 0.5rem;
+          transition: all 0.3s ease;
+        }
+
+        .register-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 24px rgba(37, 99, 235, 0.4);
+        }
+
+        .register-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
       `}</style>
     </div>
