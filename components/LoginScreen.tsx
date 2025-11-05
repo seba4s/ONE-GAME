@@ -718,6 +718,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         }
 
         .login-section,
+        .register-section,
         .guest-section {
           display: flex;
           flex-direction: column;
