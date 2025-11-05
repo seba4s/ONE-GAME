@@ -97,9 +97,11 @@ Las contribuciones son bienvenidas. Para cambios importantes:
 
 Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE](LICENSE) para detalles.
 
-## 👨‍💻 Autor
+## 👨‍💻 Autores
 
-**Sebastian Lopez**
+**Sebastian Lopez** -
+**Miguel Mendoza** 
+- Email: miguelangel11230@gmail.com
 - Email: jlopezbenavides73@gmail.com
 - GitHub: [@tu-usuario](https://github.com/tu-usuario)
 
