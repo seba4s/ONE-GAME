@@ -35,36 +35,6 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     guest: null
   })
 
-  // Container transition animation using CSS
-  const animateContainer = (element: HTMLDivElement | null, isEntering: boolean) => {
-    if (!element) return
-
-    if (isEntering) {
-      element.classList.add('fade-in-up')
-      element.classList.remove('fade-out-down')
-    } else {
-      element.classList.add('fade-out-down')
-      element.classList.remove('fade-in-up')
-    }
-  }
-
-  // Animate container on tab change
-  useEffect(() => {
-    const previousTab = Object.keys(containerRefs.current).find(
-      key => key !== activeTab
-    )
-
-    if (previousTab && containerRefs.current[previousTab as keyof typeof containerRefs.current]) {
-      animateContainer(containerRefs.current[previousTab as keyof typeof containerRefs.current], false)
-    }
-
-    if (containerRefs.current[activeTab as keyof typeof containerRefs.current]) {
-      setTimeout(() => {
-        animateContainer(containerRefs.current[activeTab as keyof typeof containerRefs.current], true)
-      }, 100)
-    }
-  }, [activeTab])
-
   // Button animation function using keyframes
   const animateButton = (e: React.MouseEvent<HTMLButtonElement>) => {
     const button = e.currentTarget
@@ -256,15 +226,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </div>
 
         {/* Content Sections */}
-        <div className="tab-content">
+        <div className="tab-content" key={activeTab}>
           {/* Login Tab */}
           {activeTab === "login" && (
-            <div 
-              className="login-section"
-              ref={(el) => {
-                if (el) containerRefs.current.login = el
-              }}
-            >
+            <div className="login-section fade-in-up">
               <h2 className="section-title">Inicia sesión con tu cuenta</h2>
 
               {/* Email Input */}
@@ -354,12 +319,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           {/* Register Tab */}
           {activeTab === "register" && (
-            <div 
-              className="register-section"
-              ref={(el) => {
-                if (el) containerRefs.current.register = el
-              }}
-            >
+            <div className="register-section fade-in-up">
               <h2 className="section-title">Crea tu cuenta</h2>
 
               {/* Email Input */}
@@ -486,12 +446,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           {/* Guest Tab */}
           {activeTab === "guest" && (
-            <div 
-              className="guest-section"
-              ref={(el) => {
-                if (el) containerRefs.current.guest = el
-              }}
-            >
+            <div className="guest-section fade-in-up">
               <h2 className="section-title">Ingresa tu Nickname</h2>
 
               <div className="nickname-input-group">
@@ -802,6 +757,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           flex-direction: column;
           gap: 1.5rem;
           min-height: 300px;
+          position: relative;
+          overflow: hidden;
         }
 
         .login-section,
@@ -810,6 +767,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           display: flex;
           flex-direction: column;
           gap: 1rem;
+          width: 100%;
+          animation: fadeInUp 0.5s ease-in-out forwards;
         }
 
         .section-title {
