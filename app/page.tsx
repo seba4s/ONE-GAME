@@ -8,9 +8,12 @@ import ParticleCanvas from "@/components/ParticleCanvas"
 import UnoCardsBackground from "@/components/UnoCardsBackground"
 import GalaxySpiral from "@/components/GalaxySpiral"
 import SettingsModal from "@/components/SettingsModal"
+import GameRoomMenu from "@/components/game-room-menu"
+import HalftoneWaves from "@/components/halftone-waves"
 
 export default function HomePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState<'main' | 'game'>('main')
 
   return (
     <main className="relative min-h-screen flex items-center justify-center overflow-hidden" style={{background: 'radial-gradient(circle at center, #ff8c00 0%, #ff4500 20%, #dc2626 40%, #8b0000 80%, #000000 100%)'}}>
@@ -48,7 +51,7 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-4 min-w-[320px] relative z-10">
             {/* Play Button - Large and full width */}
-            <Button size="lg" className="glass-button glass-button-primary glass-button-large group">
+            <Button size="lg" className="glass-button glass-button-primary glass-button-large group" onClick={() => setCurrentScreen('game')}>
               <Play className="mr-2 transition-transform group-hover:scale-110 h-10 w-10" />
               <span className="text-xl font-bold tracking-wide">JUGAR</span>
             </Button>
@@ -72,6 +75,15 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {currentScreen === 'game' && (
+  <div className="fixed inset-0 z-50">
+    <HalftoneWaves />
+    <div className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full p-4">
+      <GameRoomMenu onBack={() => setCurrentScreen('main')} />
+    </div>
+  </div>
+)}
 
       {/* Settings Modal */}
       <SettingsModal 
