@@ -136,7 +136,7 @@ export default function HomePage() {
         <div className="fixed inset-0 z-50">
           <HalftoneWaves />
           <div className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full p-4">
-            <GameRoomMenu onBack={() => setCurrentScreen('main')} userData={userData} />
+            <GameRoomMenu onBack={() => setCurrentScreen('room-selection')} userData={userData} />
           </div>
         </div>
       )}
