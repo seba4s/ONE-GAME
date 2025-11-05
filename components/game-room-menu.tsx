@@ -271,20 +271,21 @@ useEffect(() => {
                 </Select>
               </div>
 
-              <div className="config-toggle">
-                <Label className="config-label">
+              <div className="config-item">
+                <Label className="config-label mb-2">
                   <Image src="/icons/cards-icon.png" alt="Apilar" width={16} height={16} className="mr-2" />
                   Apilar +2/+4
                 </Label>
-                <Switch checked={stackCards} onCheckedChange={setStackCards} />
-              </div>
-
-              <div className="config-toggle">
-                <Label className="config-label">
-                  <Image src="/icons/robot-icon.png" alt="Bots" width={16} height={16} className="mr-2" />
-                  Jugar con Bots
-                </Label>
-                <Switch checked={false} onCheckedChange={() => {}} />
+                <Button
+                  onClick={() => setStackCards(!stackCards)}
+                  className={`glass-button w-full justify-center ${
+                    stackCards 
+                      ? 'bg-gradient-to-r from-green-600/80 to-green-700/80 hover:from-green-600 hover:to-green-700 border-green-500/50' 
+                      : 'bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 border-red-500/50'
+                  }`}
+                >
+                  {stackCards ? 'ACTIVADO' : 'DESACTIVADO'}
+                </Button>
               </div>
 
               {roomType === "private" && (
