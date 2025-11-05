@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, Facebook, Apple, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
-// @ts-ignore
-import anime from "animejs"
 
 interface LoginScreenProps {
   onLoginSuccess: (userData: { username?: string; isGuest: boolean }) => void
@@ -30,46 +28,57 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false)
   const [showRegisterPasswordConfirm, setShowRegisterPasswordConfirm] = useState(false)
 
-  // Ref for animations
-  const animationRef = useRef<any>(null)
+  // Refs for animations
+  const containerRefs = useRef<{ [key: string]: HTMLDivElement | null }>({
+    login: null,
+    register: null,
+    guest: null
+  })
 
-  // Button animation function
-  const animateButton = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Cancel previous animation if exists
-    if (animationRef.current) {
-      animationRef.current.pause()
+  // Container transition animation using CSS
+  const animateContainer = (element: HTMLDivElement | null, isEntering: boolean) => {
+    if (!element) return
+
+    if (isEntering) {
+      element.classList.add('fade-in-up')
+      element.classList.remove('fade-out-down')
+    } else {
+      element.classList.add('fade-out-down')
+      element.classList.remove('fade-in-up')
+    }
+  }
+
+  // Animate container on tab change
+  useEffect(() => {
+    const previousTab = Object.keys(containerRefs.current).find(
+      key => key !== activeTab
+    )
+
+    if (previousTab && containerRefs.current[previousTab as keyof typeof containerRefs.current]) {
+      animateContainer(containerRefs.current[previousTab as keyof typeof containerRefs.current], false)
     }
 
+    if (containerRefs.current[activeTab as keyof typeof containerRefs.current]) {
+      setTimeout(() => {
+        animateContainer(containerRefs.current[activeTab as keyof typeof containerRefs.current], true)
+      }, 100)
+    }
+  }, [activeTab])
+
+  // Button animation function using keyframes
+  const animateButton = (e: React.MouseEvent<HTMLButtonElement>) => {
     const button = e.currentTarget
-    animationRef.current = anime.timeline({
-      targets: button,
-      duration: 600,
-      easing: "easeInOutQuad"
-    })
+    
+    // Add the animation class
+    button.classList.add('button-pulse')
+    
+    // Add glow effect
+    button.style.boxShadow = "0 0 20px rgba(99, 102, 241, 0.8)"
 
-    animationRef.current
-      .add({
-        scale: 0.95,
-        duration: 100
-      }, 0)
-      .add({
-        scale: 1.05,
-        duration: 150
-      })
-      .add({
-        scale: 1,
-        duration: 150
-      }, '-=100')
-
-    // Add a glowing effect
-    anime.set(button, {
-      boxShadow: "0 0 20px rgba(99, 102, 241, 0.8)"
-    })
-
+    // Remove animation class after it completes
     setTimeout(() => {
-      anime.set(button, {
-        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)"
-      })
+      button.classList.remove('button-pulse')
+      button.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.3)"
     }, 400)
   }
 
@@ -250,7 +259,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         <div className="tab-content">
           {/* Login Tab */}
           {activeTab === "login" && (
-            <div className="login-section">
+            <div 
+              className="login-section"
+              ref={(el) => {
+                if (el) containerRefs.current.login = el
+              }}
+            >
               <h2 className="section-title">Inicia sesión con tu cuenta</h2>
 
               {/* Email Input */}
@@ -340,7 +354,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           {/* Register Tab */}
           {activeTab === "register" && (
-            <div className="register-section">
+            <div 
+              className="register-section"
+              ref={(el) => {
+                if (el) containerRefs.current.register = el
+              }}
+            >
               <h2 className="section-title">Crea tu cuenta</h2>
 
               {/* Email Input */}
@@ -467,7 +486,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           {/* Guest Tab */}
           {activeTab === "guest" && (
-            <div className="guest-section">
+            <div 
+              className="guest-section"
+              ref={(el) => {
+                if (el) containerRefs.current.guest = el
+              }}
+            >
               <h2 className="section-title">Ingresa tu Nickname</h2>
 
               <div className="nickname-input-group">
@@ -1060,6 +1084,57 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         .register-button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+
+        /* Container transition animations */
+        .fade-in-up {
+          animation: fadeInUp 0.5s ease-in-out forwards;
+        }
+
+        .fade-out-down {
+          animation: fadeOutDown 0.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeOutDown {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+        }
+
+        /* Button pulse animation */
+        .button-pulse {
+          animation: buttonPulse 0.4s ease-in-out;
+        }
+
+        @keyframes buttonPulse {
+          0% {
+            transform: scale(1);
+          }
+          25% {
+            transform: scale(0.95);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+          }
         }
       `}</style>
     </div>
