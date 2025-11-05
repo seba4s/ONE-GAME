@@ -54,7 +54,8 @@ export default function HomePage() {
             onLoginSuccess={(data) => {
               setUserData(data)
               setCurrentScreen('room-selection')
-            }} 
+            }}
+            onBack={() => setCurrentScreen('main')}
           />
         </div>
       )}
@@ -120,10 +121,10 @@ export default function HomePage() {
 
                 <Button 
                   size="lg" 
-                  className="glass-button glass-button-logout group"
+                  className="glass-button glass-button-logout group text-white"
                   onClick={handleLogout}
                 >
-                  <LogOut className="mr-1.5 h-5 w-5" />
+                  <LogOut className="mr-1.5 h-5 w-5 text-white" />
                   <span className="text-sm font-semibold">Cerrar Sesión</span>
                 </Button>
               </div>

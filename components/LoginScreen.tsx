@@ -15,9 +15,10 @@ interface UserData {
 
 interface LoginScreenProps {
   onLoginSuccess: (userData: UserData) => void
+  onBack?: () => void
 }
 
-export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps) {
   const [activeTab, setActiveTab] = useState<"login" | "register" | "guest">("login")
   const [guestNickname, setGuestNickname] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -538,6 +539,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </div>
           )}
         </div>
+
+        {/* Back Button */}
+        {onBack && (
+          <button
+            className="back-button glass-button"
+            onClick={onBack}
+          >
+            ← VOLVER
+          </button>
+        )}
       </div>
 
       <style jsx>{`
@@ -969,6 +980,29 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         .guest-submit-button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+
+        .back-button {
+          width: 100%;
+          padding: 0.75rem 1.5rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          border-radius: 8px;
+          margin-top: 1rem;
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.8);
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+          background: rgba(0, 0, 0, 0.5);
+          border-color: rgba(255, 255, 255, 0.2);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         }
 
         :global(.glass-input) {
