@@ -81,7 +81,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       {/* Modal Content Container */}
       <div className="flex items-center justify-center min-h-screen py-8">
         <div className="relative z-10 w-full max-w-2xl mx-4">
-        <div className="glass-menu-card animate-fade-in px-8 py-6 relative z-10">
+          <div className="glass-menu-card animate-fade-in px-8 py-6 relative z-10">
           {/* Corner shine effects */}
           <span className="shine shine-top"></span>
           <span className="shine shine-bottom"></span>
@@ -260,8 +260,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
     </div>
   )
 }
