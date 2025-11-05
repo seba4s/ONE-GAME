@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, Facebook, Apple, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
+// @ts-ignore
+import anime from "animejs"
 
 interface LoginScreenProps {
   onLoginSuccess: (userData: { username?: string; isGuest: boolean }) => void
@@ -28,8 +30,54 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false)
   const [showRegisterPasswordConfirm, setShowRegisterPasswordConfirm] = useState(false)
 
+  // Ref for animations
+  const animationRef = useRef<any>(null)
+
+  // Button animation function
+  const animateButton = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Cancel previous animation if exists
+    if (animationRef.current) {
+      animationRef.current.pause()
+    }
+
+    const button = e.currentTarget
+    animationRef.current = anime.timeline({
+      targets: button,
+      duration: 600,
+      easing: "easeInOutQuad"
+    })
+
+    animationRef.current
+      .add({
+        scale: 0.95,
+        duration: 100
+      }, 0)
+      .add({
+        scale: 1.05,
+        duration: 150
+      })
+      .add({
+        scale: 1,
+        duration: 150
+      }, '-=100')
+
+    // Add a glowing effect
+    anime.set(button, {
+      boxShadow: "0 0 20px rgba(99, 102, 241, 0.8)"
+    })
+
+    setTimeout(() => {
+      anime.set(button, {
+        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)"
+      })
+    }, 400)
+  }
+
   // Handle Guest Login
-  const handleGuestLogin = () => {
+  const handleGuestLogin = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
     if (guestNickname.trim().length < 3) {
       alert("El nickname debe tener al menos 3 caracteres")
       return
@@ -38,7 +86,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }
 
   // Handle Email/Username Login
-  const handleEmailLogin = async () => {
+  const handleEmailLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
     if (!loginEmail.trim() || !loginPassword.trim()) {
       alert("Por favor completa todos los campos")
       return
@@ -58,7 +109,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }
 
   // Handle Registration
-  const handleRegister = async () => {
+  const handleRegister = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
     if (!registerEmail.trim() || !registerUsername.trim() || !registerPassword.trim() || !registerPasswordConfirm.trim()) {
       alert("Por favor completa todos los campos")
       return
@@ -98,7 +152,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }
 
   // Handle Google Login
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
     setIsLoading(true)
     try {
       // Aquí irá tu código de autenticación con Google
@@ -112,7 +169,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }
 
   // Handle Facebook Login
-  const handleFacebookLogin = async () => {
+  const handleFacebookLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
     setIsLoading(true)
     try {
       // Aquí irá tu código de autenticación con Facebook
@@ -126,7 +186,10 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }
 
   // Handle Apple Login
-  const handleAppleLogin = async () => {
+  const handleAppleLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
     setIsLoading(true)
     try {
       // Aquí irá tu código de autenticación con Apple
@@ -227,21 +290,21 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </div>
 
               {/* Email/Username Login Button */}
-              <Button
+              <button
                 className="auth-button email-button glass-button"
-                onClick={handleEmailLogin}
+                onClick={handleEmailLogin as any}
                 disabled={isLoading}
               >
                 <Mail className="w-5 h-5 mr-3" />
                 <span>Iniciar Sesión</span>
-              </Button>
+              </button>
 
               <div className="divider">O continúa con</div>
 
               {/* Google Button */}
-              <Button
+              <button
                 className="auth-button google-button glass-button"
-                onClick={handleGoogleLogin}
+                onClick={handleGoogleLogin as any}
                 disabled={isLoading}
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -251,27 +314,27 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
                 <span>Google</span>
-              </Button>
+              </button>
 
               {/* Facebook Button */}
-              <Button
+              <button
                 className="auth-button facebook-button glass-button"
-                onClick={handleFacebookLogin}
+                onClick={handleFacebookLogin as any}
                 disabled={isLoading}
               >
                 <Facebook className="w-5 h-5 mr-3" />
                 <span>Facebook</span>
-              </Button>
+              </button>
 
               {/* Apple Button */}
-              <Button
+              <button
                 className="auth-button apple-button glass-button"
-                onClick={handleAppleLogin}
+                onClick={handleAppleLogin as any}
                 disabled={isLoading}
               >
                 <Apple className="w-5 h-5 mr-3" />
                 <span>Apple</span>
-              </Button>
+              </button>
             </div>
           )}
 
@@ -354,21 +417,21 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </div>
 
               {/* Register Button (use same style as login email button) */}
-              <Button
+              <button
                 className="auth-button email-button glass-button"
-                onClick={handleRegister}
+                onClick={handleRegister as any}
                 disabled={isLoading}
               >
                 <Mail className="w-5 h-5 mr-3" />
                 <span>Crear Cuenta</span>
-              </Button>
+              </button>
 
               <div className="divider">O regístrate con</div>
 
               {/* Google Button */}
-              <Button
+              <button
                 className="auth-button google-button glass-button"
-                onClick={handleGoogleLogin}
+                onClick={handleGoogleLogin as any}
                 disabled={isLoading}
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -378,27 +441,27 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                   <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
                 <span>Google</span>
-              </Button>
+              </button>
 
               {/* Facebook Button */}
-              <Button
+              <button
                 className="auth-button facebook-button glass-button"
-                onClick={handleFacebookLogin}
+                onClick={handleFacebookLogin as any}
                 disabled={isLoading}
               >
                 <Facebook className="w-5 h-5 mr-3" />
                 <span>Facebook</span>
-              </Button>
+              </button>
 
               {/* Apple Button */}
-              <Button
+              <button
                 className="auth-button apple-button glass-button"
-                onClick={handleAppleLogin}
+                onClick={handleAppleLogin as any}
                 disabled={isLoading}
               >
                 <Apple className="w-5 h-5 mr-3" />
                 <span>Apple</span>
-              </Button>
+              </button>
             </div>
           )}
 
@@ -431,13 +494,13 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 <p>Máximo 20 caracteres</p>
               </div>
 
-              <Button
+              <button
                 className="guest-submit-button glass-button bg-emerald-600 hover:bg-emerald-700"
-                onClick={handleGuestLogin}
+                onClick={handleGuestLogin as any}
                 disabled={isLoading || guestNickname.trim().length < 3}
               >
                 <span className="text-lg font-bold">CONTINUAR COMO INVITADO</span>
-              </Button>
+              </button>
             </div>
           )}
         </div>
