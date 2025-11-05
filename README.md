@@ -100,6 +100,8 @@ Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE](LICENSE) pa
 ## 👨‍💻 Autor
 
 **Sebastian Lopez**
+**Miguel Mendoza 
+- Email: miguelangel11230@gmail.com
 - Email: jlopezbenavides73@gmail.com
 - GitHub: [@tu-usuario](https://github.com/tu-usuario)
 
