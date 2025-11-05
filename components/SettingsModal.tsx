@@ -74,13 +74,14 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 overflow-y-auto py-8">
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       
-      {/* Modal Content */}
-      <div className="relative z-10 w-full max-w-2xl mx-4">
-        <div className="glass-menu-card animate-fade-in px-8 py-6 relative z-10">
+      {/* Modal Content Container */}
+      <div className="flex items-center justify-center min-h-screen py-8">
+        <div className="relative z-10 w-full max-w-2xl mx-4">
+          <div className="glass-menu-card animate-fade-in px-8 py-6 relative z-10">
           {/* Corner shine effects */}
           <span className="shine shine-top"></span>
           <span className="shine shine-bottom"></span>
@@ -258,6 +259,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </Button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
