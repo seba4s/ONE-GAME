@@ -1,4 +1,4 @@
-"use client"
+  "use client"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import HalftoneWaves from "@/components/halftone-waves"
 import LoginScreen from "@/components/LoginScreen"
 
 interface UserData {
-  username?: string
+  username: string
   isGuest: boolean
 }
 
@@ -121,7 +121,7 @@ export default function HomePage() {
             <div className="fixed inset-0 z-50">
               <HalftoneWaves />
               <div className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full p-4">
-                <GameRoomMenu onBack={() => setCurrentScreen('main')} />
+                <GameRoomMenu onBack={() => setCurrentScreen('main')} userData={userData} />
               </div>
             </div>
           )}

@@ -7,7 +7,7 @@ import { Mail, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 
 interface LoginScreenProps {
-  onLoginSuccess: (userData: { username?: string; isGuest: boolean }) => void
+  onLoginSuccess: (userData: { username: string; isGuest: boolean }) => void
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {

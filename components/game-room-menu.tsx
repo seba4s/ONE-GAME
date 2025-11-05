@@ -10,11 +10,17 @@ import { Crown, Play, ArrowLeft, Volume2, Link2 } from "lucide-react"
 import Image from "next/image"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-interface GameRoomMenuProps {
-  onBack?: () => void
+interface UserData {
+  username: string
+  isGuest: boolean
 }
 
-export default function GameRoomMenu({ onBack }: GameRoomMenuProps) {
+interface GameRoomMenuProps {
+  onBack?: () => void
+  userData?: UserData | null
+}
+
+export default function GameRoomMenu({ onBack, userData }: GameRoomMenuProps) {
   const [roomType, setRoomType] = useState<"public" | "private">("public")
   const [roomCode, setRoomCode] = useState("")
   // Generar código automáticamente al cargar
@@ -24,12 +30,25 @@ useEffect(() => {
   const [stackCards, setStackCards] = useState(true)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [players, setPlayers] = useState([
-    { id: 1, name: "JUGADOR1", isHost: true, isBot: false },
+    { id: 1, name: userData?.username || "JUGADOR1", isHost: true, isBot: false },
     { id: 2, name: "VACÍO", isEmpty: true, isBot: false },
     { id: 3, name: "VACÍO", isEmpty: true, isBot: false },
     { id: 4, name: "VACÍO", isEmpty: true, isBot: false },
   ])
   const [selectedPreset, setSelectedPreset] = useState<string | null>("clasico")
+
+  // Ajustar cantidad de espacios de jugadores según selección (2,4,6,8)
+  const handlePlayersCountChange = (value: string) => {
+    const count = Number(value) || 4
+    setPlayers((prev) => {
+      const next = prev.slice(0, count)
+      for (let i = next.length; i < count; i++) {
+        next.push({ id: i + 1, name: "VACÍO", isEmpty: true, isBot: false } as any)
+      }
+      // Reindex ids
+      return next.map((p, idx) => ({ ...p, id: idx + 1 }))
+    })
+  }
 
   const generateRoomCode = () => {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -74,8 +93,7 @@ useEffect(() => {
         name: "VACÍO",
         isEmpty: true,
         isBot: false,
-        isHost: false,
-      }
+      } as any
       setPlayers(newPlayers)
     }
   }
@@ -123,10 +141,10 @@ useEffect(() => {
           {/* Columna Izquierda: Jugadores */}
           <div className="column players-column">
             <div className="column-header">
-              <h3 className="column-title text-white">JUGADORES {players.filter((p) => !p.isEmpty).length}/4</h3>
+              <h3 className="column-title text-white">JUGADORES {players.filter((p) => !p.isEmpty).length}/{players.length}</h3>
             </div>
 
-            <Select defaultValue="4">
+            <Select defaultValue="4" onValueChange={handlePlayersCountChange}>
               <SelectTrigger className="glass-input mb-4">
                 <SelectValue />
               </SelectTrigger>
@@ -211,7 +229,7 @@ useEffect(() => {
             </div>
 
             <div className="config-content">
-              <div className="config-item">
+              <div className="config-item cards-initial">
                 <Label className="config-label">
                   <Image src="/icons/cards-icon.png" alt="Cartas" width={16} height={16} className="mr-2" />
                   Cartas Iniciales
@@ -228,7 +246,7 @@ useEffect(() => {
                 </Select>
               </div>
 
-              <div className="config-item">
+              <div className="config-item points-win">
                 <Label className="config-label">
                   <Image src="/icons/points-icon.png" alt="Puntos" width={16} height={16} className="mr-2" />
                   Puntos para Ganar
@@ -245,7 +263,7 @@ useEffect(() => {
                 </Select>
               </div>
 
-              <div className="config-item">
+              <div className="config-item turn-time">
                 <Label className="config-label">Tiempo por Turno</Label>
                 <Select defaultValue="60">
                   <SelectTrigger className="glass-input-small">
@@ -259,20 +277,21 @@ useEffect(() => {
                 </Select>
               </div>
 
-              <div className="config-toggle">
-                <Label className="config-label">
+              <div className="config-item">
+                <Label className="config-label mb-2">
                   <Image src="/icons/cards-icon.png" alt="Apilar" width={16} height={16} className="mr-2" />
                   Apilar +2/+4
                 </Label>
-                <Switch checked={stackCards} onCheckedChange={setStackCards} />
-              </div>
-
-              <div className="config-toggle">
-                <Label className="config-label">
-                  <Image src="/icons/robot-icon.png" alt="Bots" width={16} height={16} className="mr-2" />
-                  Jugar con Bots
-                </Label>
-                <Switch checked={false} onCheckedChange={() => {}} />
+                <Button
+                  onClick={() => setStackCards(!stackCards)}
+                  className={`glass-button w-full justify-center ${
+                    stackCards 
+                      ? 'bg-gradient-to-r from-green-600/80 to-green-700/80 hover:from-green-600 hover:to-green-700 border-green-500/50' 
+                      : 'bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 border-red-500/50'
+                  }`}
+                >
+                  {stackCards ? 'ACTIVADO' : 'DESACTIVADO'}
+                </Button>
               </div>
 
               {roomType === "private" && (
@@ -344,14 +363,16 @@ useEffect(() => {
           --hue2: 0;
           --border: 1px;
           --border-color: hsl(var(--hue2), 12%, 20%);
-          --radius: 22px;
+          --radius: 28px;
           --ease: cubic-bezier(0.5, 1, 0.89, 1);
           
           position: relative;
           min-width: 900px;
           max-width: 1200px;
           width: 95vw;
-          min-height: 100vh;
+          /* disminuir altura del contenedor principal para que no ocupe toda la ventana */
+          min-height: 70vh;
+          max-height: 85vh;
           display: flex;
           flex-direction: column;
           border-radius: var(--radius);
@@ -523,6 +544,7 @@ useEffect(() => {
           flex: 1;
           display: flex;
           flex-direction: column;
+          overflow: hidden;
         }
 
         /* Header Section */
@@ -551,8 +573,19 @@ useEffect(() => {
         }
 
         .sound-button {
-          width: 2.5rem;
-          height: 2.5rem;
+          width: 3rem;
+          height: 3rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.25rem;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.03);
+        }
+
+        .sound-button :global(svg) {
+          width: 1.1rem;
+          height: 1.1rem;
         }
 
         /* Main Layout */
@@ -566,7 +599,7 @@ useEffect(() => {
 
         .column {
           background: rgba(0, 0, 0, 0.3);
-          border-radius: 12px;
+          border-radius: 18px;
           padding: 1rem;
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -590,6 +623,9 @@ useEffect(() => {
           flex-direction: column;
           gap: 0.5rem;
           margin-bottom: 1rem;
+          /* limitar altura para mostrar hasta 4 slots y luego scroll */
+          max-height: 14rem; /* aprox 4 slots */
+          overflow-y: auto;
         }
 
         .player-slot {
@@ -597,7 +633,7 @@ useEffect(() => {
           align-items: center;
           gap: 0.75rem;
           padding: 0.75rem;
-          border-radius: 8px;
+          border-radius: 12px;
           background: rgba(0, 0, 0, 0.3);
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -657,75 +693,91 @@ useEffect(() => {
           font-size: 0.75rem;
         }
 
-        /* Grid más grande para solo 2 modos */
+        /* Grid optimizado para presets: tamaño coherente y evita solapamiento con footer */
         .presets-grid-large {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 1rem;
-          height: 100%;
+          /* permitir que la columna central crezca de forma coherente dentro del layout */
+          flex: 1 1 auto;
+          align-content: start;
+          /* usar overflow interno y espacio inferior para que no tape la footer */
+          max-height: calc(100vh - 320px);
+          overflow: auto;
+          padding: 0.5rem;
+          padding-bottom: 1rem; /* espacio extra para que no tape la footer */
         }
 
         .preset-card-large {
           position: relative;
           overflow: hidden;
-          border: 3px solid rgba(239, 68, 68, 0.4);
-          border-radius: 16px;
-          padding: 2rem 1rem;
+          border: 3px solid rgba(239, 68, 68, 0.35);
+          border-radius: 20px;
+          padding: 1.25rem 0.9rem;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 1rem;
+          gap: 0.75rem;
           cursor: pointer;
-          transition: all 0.3s ease;
-          min-height: 200px;
+          transition: transform 220ms var(--ease), box-shadow 220ms var(--ease);
+          /* Tamaño proporcional para verse consistente con el contenido */
+          min-height: 150px;
+          max-height: 260px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
-        /* Imagen de fondo esquinada */
+        /* imagen de fondo con tamaño mayor pero sutil */
         .preset-bg-image {
           position: absolute;
-          bottom: -10px;
-          right: -10px;
-          opacity: 0.15;
-          transform: rotate(-15deg);
+          bottom: -8px;
+          right: -8px;
+          opacity: 0.12;
+          transform: rotate(-12deg);
           pointer-events: none;
+          width: 140px;
+          height: auto;
         }
 
-        /* Colores específicos para Clásico (rojo) y Torneo (naranja) */
         .preset-card-large[data-color="red"] {
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
           border-color: rgba(239, 68, 68, 0.6);
         }
 
         .preset-card-large[data-color="orange"] {
-          background: linear-gradient(135deg, rgba(249, 115, 22, 0.9), rgba(234, 88, 12, 0.9));
+          background: linear-gradient(135deg, rgba(249, 115, 22, 0.95), rgba(234, 88, 12, 0.95));
           border-color: rgba(249, 115, 22, 0.6);
         }
 
         .preset-card-large:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(239, 68, 68, 0.4);
-          filter: brightness(1.1);
+          transform: translateY(-6px);
+          box-shadow: 0 18px 36px rgba(0,0,0,0.35);
+          filter: brightness(1.06);
         }
 
         .preset-card-large.selected {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
-          border-color: rgba(16, 185, 129, 0.6);
-          box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+          border-color: rgba(16, 185, 129, 0.7);
+          box-shadow: 0 0 36px rgba(16,185,129,0.45);
         }
 
         .preset-icon-large {
-          font-size: 3rem;
           z-index: 1;
+          width: 72px;
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .preset-name-large {
-          font-weight: 700;
-          font-size: 1rem;
+          font-weight: 800;
+          font-size: 1.15rem;
           color: white;
           text-align: center;
-          letter-spacing: 0.1em;
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+          letter-spacing: 0.08em;
+          text-shadow: 1.5px 1.5px 3px rgba(0, 0, 0, 0.35);
           z-index: 1;
         }
 
@@ -740,6 +792,19 @@ useEffect(() => {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+        }
+
+        /* Colores específicos para cada opción de configuración */
+        .config-item.cards-initial :global(.glass-input-small) {
+          border-left: 4px solid rgba(59,130,246,0.9); /* azul */
+        }
+
+        .config-item.points-win :global(.glass-input-small) {
+          border-left: 4px solid rgba(16,185,129,0.9); /* verde */
+        }
+
+        .config-item.turn-time :global(.glass-input-small) {
+          border-left: 4px solid rgba(168,85,247,0.9); /* morado */
         }
 
         .config-toggle {
@@ -760,11 +825,27 @@ useEffect(() => {
           font-size: 0.75rem;
         }
 
-        /* Footer Section */
+        /* Forzar color blanco en cualquier etiqueta y texto dentro de la columna de configuración.
+           Cubrimos etiquetas <label>, el componente Label de radix y cualquier elemento hijo
+           para evitar reglas de menor especificidad que permanezcan en negro. */
+        .config-content,
+        .config-content *,
+        .config-content label,
+        .config-content .config-label,
+        .config-column .config-label,
+        .config-toggle .config-label,
+        .config-content :global(label),
+        .config-content :global(.config-label) {
+          color: #ffffff !important;
+        }
+
+        /* Asegurar footer encima si algo aún desborda */
         .footer-section {
           display: flex;
           justify-content: center;
           gap: 1rem;
+          position: relative;
+          z-index: 30;
         }
 
         .footer-button {
@@ -792,6 +873,25 @@ useEffect(() => {
 
         .start-button:hover {
           background: linear-gradient(90deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
+        }
+
+        /* Responsive: mantener proporciones en pantallas pequeñas */
+        @media (max-width: 880px) {
+          .main-layout { grid-template-columns: 1fr; }
+          .presets-grid-large {
+            grid-template-columns: 1fr;
+            max-height: none;
+            padding-bottom: 1.5rem;
+          }
+          .preset-card-large {
+            min-height: 140px;
+            max-height: 200px;
+            padding: 1rem;
+          }
+          .preset-bg-image { width: 110px; right: -6px; bottom: -6px; }
+          .preset-icon-large { width: 56px; height: 56px; }
+          .preset-name-large { font-size: 1.05rem; }
+          .footer-button { padding: 0.6rem 1.6rem; font-size: 0.95rem; }
         }
 
         @keyframes glow {
