@@ -9,6 +9,7 @@ import UnoCardsBackground from "@/components/UnoCardsBackground"
 import GalaxySpiral from "@/components/GalaxySpiral"
 import SettingsModal from "@/components/SettingsModal"
 import GameRoomMenu from "@/components/game-room-menu"
+import RoomSelectionScreen from "@/components/RoomSelectionScreen"
 import HalftoneWaves from "@/components/halftone-waves"
 import LoginScreen from "@/components/LoginScreen"
 
@@ -22,7 +23,7 @@ interface UserData {
 
 export default function HomePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'main' | 'game'>('main')
+  const [currentScreen, setCurrentScreen] = useState<'login' | 'main' | 'room-selection' | 'game'>('main')
   const [userData, setUserData] = useState<UserData | null>(null)
 
   const handleLogout = () => {
@@ -35,8 +36,8 @@ export default function HomePage() {
       // Si no está logueado, mostrar login primero
       setCurrentScreen('login')
     } else {
-      // Si está logueado, ir directo al juego
-      setCurrentScreen('game')
+      // Si está logueado, ir a selección de sala
+      setCurrentScreen('room-selection')
     }
   }
 
@@ -52,13 +53,22 @@ export default function HomePage() {
           <LoginScreen 
             onLoginSuccess={(data) => {
               setUserData(data)
-              setCurrentScreen('game')
+              setCurrentScreen('room-selection')
             }} 
           />
         </div>
       )}
 
-      {currentScreen !== 'login' && (
+      {currentScreen === 'room-selection' && (
+        <div className="relative z-10 animate-fade-in">
+          <RoomSelectionScreen 
+            onCreateRoom={() => setCurrentScreen('game')}
+            onBack={() => setCurrentScreen('main')}
+          />
+        </div>
+      )}
+
+      {currentScreen === 'main' && (
         <>
           <div className="absolute top-8 left-8 z-20 animate-float">
             <Image 
@@ -119,22 +129,22 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-
-          {currentScreen === 'game' && (
-            <div className="fixed inset-0 z-50">
-              <HalftoneWaves />
-              <div className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full p-4">
-                <GameRoomMenu onBack={() => setCurrentScreen('main')} userData={userData} />
-              </div>
-            </div>
-          )}
-
-          <SettingsModal 
-            isOpen={isSettingsOpen} 
-            onClose={() => setIsSettingsOpen(false)} 
-          />
         </>
       )}
+
+      {currentScreen === 'game' && (
+        <div className="fixed inset-0 z-50">
+          <HalftoneWaves />
+          <div className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full p-4">
+            <GameRoomMenu onBack={() => setCurrentScreen('main')} userData={userData} />
+          </div>
+        </div>
+      )}
+
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </main>
   )
 }
