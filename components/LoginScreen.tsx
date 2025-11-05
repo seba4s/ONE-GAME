@@ -6,8 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Mail, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
 
+interface UserData {
+  username: string
+  email?: string
+  userId?: string
+  isGuest: boolean
+}
+
 interface LoginScreenProps {
-  onLoginSuccess: (userData: { username: string; isGuest: boolean }) => void
+  onLoginSuccess: (userData: UserData) => void
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
@@ -76,12 +83,32 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     
     setIsLoading(true)
     try {
-      // TODO: Aquí irá tu código de autenticación con email/username
+      // TODO: Integrar con tu backend (API endpoint)
+      // const response = await fetch('/api/auth/login', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email: loginEmail, password: loginPassword })
+      // })
+      // const data = await response.json()
+      // if (!response.ok) throw new Error(data.error)
+      // onLoginSuccess({ 
+      //   username: data.username, 
+      //   email: data.email,
+      //   userId: data.id,
+      //   isGuest: false 
+      // })
+      
       console.log("Email login:", { email: loginEmail, password: loginPassword })
-      // Placeholder: Simular login exitoso
-      // onLoginSuccess({ username: loginEmail, isGuest: false })
+      // Placeholder: Simular respuesta del backend
+      onLoginSuccess({ 
+        username: loginEmail.split('@')[0], 
+        email: loginEmail,
+        userId: "user123",
+        isGuest: false 
+      })
     } catch (error) {
       console.error("Error:", error)
+      alert("Error al iniciar sesión")
     } finally {
       setIsLoading(false)
     }
@@ -114,17 +141,31 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
     setIsLoading(true)
     try {
-      // TODO: Aquí irá tu código de registro
+      // TODO: Integrar con tu backend (API endpoint)
+      // const response = await fetch('/api/auth/register', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ 
+      //     email: registerEmail, 
+      //     username: registerUsername, 
+      //     password: registerPassword 
+      //   })
+      // })
+      // const data = await response.json()
+      // if (!response.ok) throw new Error(data.error)
+      // alert("¡Registro exitoso! Inicia sesión con tus credenciales")
+      // setActiveTab("login")
+      
       console.log("Register:", { email: registerEmail, username: registerUsername, password: registerPassword })
-      // Placeholder: Después del registro exitoso, ir a login
+      alert("¡Registro exitoso! Inicia sesión con tus credenciales")
       setActiveTab("login")
       setRegisterEmail("")
       setRegisterUsername("")
       setRegisterPassword("")
       setRegisterPasswordConfirm("")
-      alert("¡Registro exitoso! Inicia sesión con tus credenciales")
     } catch (error) {
       console.error("Error:", error)
+      alert("Error al registrarse: " + (error instanceof Error ? error.message : "Intenta de nuevo"))
     } finally {
       setIsLoading(false)
     }
@@ -137,11 +178,21 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     }
     setIsLoading(true)
     try {
-      // Aquí irá tu código de autenticación con Google
+      // TODO: Integrar con NextAuth o tu proveedor de OAuth
+      // import { signIn } from "next-auth/react"
+      // await signIn("google", { redirect: false })
+      
       console.log("Google login clicked")
-      // Placeholder para tu código
+      // Placeholder: Simular respuesta del backend OAuth
+      onLoginSuccess({ 
+        username: "google_user_123", 
+        email: "user@google.com",
+        userId: "google_123",
+        isGuest: false 
+      })
     } catch (error) {
       console.error("Error:", error)
+      alert("Error al iniciar sesión con Google")
     } finally {
       setIsLoading(false)
     }
@@ -154,11 +205,18 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     }
     setIsLoading(true)
     try {
-      // Aquí irá tu código de autenticación con Facebook
+      // TODO: Integrar con NextAuth o tu proveedor de OAuth
       console.log("Facebook login clicked")
-      // Placeholder para tu código
+      // Placeholder: Simular respuesta del backend OAuth
+      onLoginSuccess({ 
+        username: "facebook_user_456", 
+        email: "user@facebook.com",
+        userId: "facebook_456",
+        isGuest: false 
+      })
     } catch (error) {
       console.error("Error:", error)
+      alert("Error al iniciar sesión con Facebook")
     } finally {
       setIsLoading(false)
     }
@@ -171,11 +229,18 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     }
     setIsLoading(true)
     try {
-      // Aquí irá tu código de autenticación con Apple
+      // TODO: Integrar con NextAuth o tu proveedor de OAuth
       console.log("Apple login clicked")
-      // Placeholder para tu código
+      // Placeholder: Simular respuesta del backend OAuth
+      onLoginSuccess({ 
+        username: "apple_user_789", 
+        email: "user@apple.com",
+        userId: "apple_789",
+        isGuest: false 
+      })
     } catch (error) {
       console.error("Error:", error)
+      alert("Error al iniciar sesión con Apple")
     } finally {
       setIsLoading(false)
     }

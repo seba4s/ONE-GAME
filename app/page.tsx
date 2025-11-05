@@ -14,7 +14,10 @@ import LoginScreen from "@/components/LoginScreen"
 
 interface UserData {
   username: string
+  email?: string
+  userId?: string
   isGuest: boolean
+  // Agregar otros campos según tu backend (avatar, nivel, etc)
 }
 
 export default function HomePage() {
