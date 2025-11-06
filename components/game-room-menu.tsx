@@ -37,7 +37,7 @@ useEffect(() => {
   ])
   const [selectedPreset, setSelectedPreset] = useState<string | null>("clasico")
 
-  // Ajustar cantidad de espacios de jugadores según selección (2,4,6,8)
+  // Ajustar cantidad de espacios de jugadores según selección (2,4)
   const handlePlayersCountChange = (value: string) => {
     const count = Number(value) || 4
     setPlayers((prev) => {
@@ -151,8 +151,6 @@ useEffect(() => {
               <SelectContent>
                 <SelectItem value="2">2 JUGADORES</SelectItem>
                 <SelectItem value="4">4 JUGADORES</SelectItem>
-                <SelectItem value="6">6 JUGADORES</SelectItem>
-                <SelectItem value="8">8 JUGADORES</SelectItem>
               </SelectContent>
             </Select>
 
