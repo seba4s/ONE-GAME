@@ -69,6 +69,10 @@ export default function GameRoom({
           border-radius: 0.5em;
           overflow: hidden;
           position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #fff;
         }
 
         .card .bckg::before {
@@ -82,15 +86,15 @@ export default function GameRoom({
           transform: translate(-50%, -50%) rotate(10deg);
           transform-origin: center center;
           border-radius: 90% 40%;
+          z-index: 1;
         }
 
         .card .center-icon {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 1.5em;
+          position: relative;
+          font-size: 2.5em;
           font-weight: bold;
+          z-index: 10;
+          line-height: 1;
         }
 
         .card.red { color: #dc251c; }
@@ -229,9 +233,9 @@ export default function GameRoom({
                 onClick={() => onPlayCard(0, idx)}
               >
                 <div className="bckg">
-                  <div className="center-icon">
+                  <span className="center-icon">
                     {getCardDisplay(card.display)}
-                  </div>
+                  </span>
                 </div>
               </div>
             ))}
@@ -288,9 +292,9 @@ export default function GameRoom({
             {topDiscard && (
               <div className={`card ${getCardColor(topDiscard.display)}`}>
                 <div className="bckg">
-                  <div className="center-icon">
+                  <span className="center-icon">
                     {getCardDisplay(topDiscard.display)}
-                  </div>
+                  </span>
                 </div>
               </div>
             )}
