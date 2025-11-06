@@ -1,20 +1,21 @@
 'use client'
 
 import { GameState } from '@/lib/gameTypes'
-
-interface GameRoomProps {
-  gameState: GameState
-  onPlayCard: (playerIndex: number, cardIndex: number) => void
-  onDrawCard: () => void
-}
+import ParticleCanvas from './ParticleCanvas'
+import UnoCardsBackground from './UnoCardsBackground'
+import GalaxySpiral from './GalaxySpiral'
 
 export default function GameRoom({
   gameState,
   onPlayCard,
   onDrawCard
-}: GameRoomProps) {
+}: {
+  gameState: GameState
+  onPlayCard: (playerIndex: number, cardIndex: number) => void
+  onDrawCard: () => void
+}) {
   
-  // Convertir card string a color class
+  // Convertir card string a color
   const getCardColor = (cardStr: string) => {
     if (cardStr.includes('r')) return 'red'
     if (cardStr.includes('y')) return 'yellow' 
@@ -24,301 +25,310 @@ export default function GameRoom({
     return 'black'
   }
 
-  // Obtener número/símbolo de la carta
+  // Obtener display de la carta
   const getCardDisplay = (cardStr: string) => {
     if (cardStr.includes('d2')) return '+2'
-    if (cardStr.includes('s')) return 'SKIP'
-    if (cardStr.includes('r') && cardStr.length > 2) return 'REV'
-    if (cardStr.includes('w+4')) return 'W+4'
+    if (cardStr.includes('s')) return 'S'
+    if (cardStr.includes('r') && cardStr.length > 2) return 'R'
+    if (cardStr.includes('w+4')) return '+4'
     if (cardStr === 'w') return 'W'
-    return cardStr.replace(/[rgby]/g, '')
+    // Números
+    const num = cardStr.match(/\d+/)
+    return num ? num[0] : ''
   }
 
   const topDiscard = gameState.discardPile[gameState.discardPile.length - 1]
-  const gameColor = getCardColor(topDiscard.display)
 
   return (
     <>
-      {/* CSS Styles */}
       <style jsx>{`
-        body {
+        * { box-sizing: border-box; }
+
+        :global(body) {
           margin: 0;
           padding: 0;
-        }
-
-        .game-field {
-          height: 100vh;
-          display: grid;
-          justify-content: center;
-          align-content: center;
-          grid-gap: 1em;
-          grid-template-columns: 150px 350px 150px;
-          grid-template-rows: 150px 350px 150px;
-          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
           font-family: Arial, sans-serif;
-          position: relative;
-        }
-
-        .card {
-          width: 80px;
-          height: 123px;
-          border: 2px solid #444;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          background: radial-gradient(circle at center, #ff8c00 0%, #ff4500 20%, #dc2626 40%, #8b0000 80%, #000000 100%);
           overflow: hidden;
         }
 
-        .card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        .game-root {
+          position: relative;
+          width: 100vw;
+          height: 100vh;
+          overflow: hidden;
         }
 
-        .card.turned {
-          background: linear-gradient(135deg, #1a1a3e 0%, #0d0d26 100%);
-          border: 2px solid #2a2a5a;
-        }
-
-        .card.turned::before {
-          content: '';
+        .background-layers {
           position: absolute;
-          width: 70%;
-          height: 70%;
-          border: 2px solid #dc251c;
-          border-radius: 4px;
-          opacity: 0.5;
+          inset: 0;
+          pointer-events: none;
+          overflow: hidden;
+          z-index: 1;
         }
 
-        .card.red {
-          background: linear-gradient(135deg, #ff6b5b 0%, #dc251c 100%);
-          color: #fff;
+        .background-gradient {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at center, #ff8c00 0%, #ff4500 20%, #dc2626 40%, #8b0000 80%, #000000 100%);
+          opacity: 0.85;
+          z-index: 0;
         }
 
-        .card.yellow {
-          background: linear-gradient(135deg, #ffff5f 0%, #fcf604 100%);
-          color: #000;
-        }
-
-        .card.blue {
-          background: linear-gradient(135deg, #5db3ff 0%, #0493de 100%);
-          color: #fff;
-        }
-
-        .card.green {
-          background: linear-gradient(135deg, #5abf7e 0%, #018d41 100%);
-          color: #fff;
-        }
-
-        .card.black {
-          background: linear-gradient(135deg, #333 0%, #1f1b18 100%);
-          color: #fff;
-        }
-
-        .card-icon {
-          font-size: 24px;
-          font-weight: bold;
-          line-height: 1;
-          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        .content-layer {
+          position: relative;
           z-index: 10;
-        }
-
-        #piles_area {
-          grid-area: 2/2;
+          width: 100%;
+          height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 40px;
-          background: rgba(0,0,0,0.3);
-          border-radius: 20px;
-          padding: 20px;
         }
 
-        #draw_pile {
+        .game-field {
+          width: 1000px;
+          height: 700px;
           position: relative;
+          background: rgba(220, 122, 122, 0.22);
+          border-radius: 40px;
+          transform: rotateX(15deg);
+          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
+          backdrop-filter: blur(8px);
         }
 
-        #draw_pile .card {
+        .card {
+          width: 65px;
+          height: 105px;
+          border: 2px solid #333;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 22px;
           cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          position: absolute;
+        }
+
+        .card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .card.red { background: #dc251c; color: white; }
+        .card.yellow { background: #fcf604; color: #333; }
+        .card.blue { background: #0493de; color: white; }
+        .card.green { background: #018d41; color: white; }
+        .card.black { background: #1f1b18; color: white; }
+        .card.turned { background: linear-gradient(135deg, #1f1b18 0%, #333 100%); }
+
+        /* Bottom Player (You) */
+        .you-area {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          height: 140px;
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          gap: 3px;
+          width: 600px;
+        }
+
+        .you-area .card {
+          position: static;
+          cursor: pointer;
+        }
+
+        .you-area .card:hover {
+          transform: translateY(-15px);
+        }
+
+        /* Top Player */
+        .top-area {
+          position: absolute;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 3px;
+          width: 600px;
+          height: 120px;
+        }
+
+        .top-area .card {
+          position: static;
+        }
+
+        /* Left Player */
+        .left-area {
+          position: absolute;
+          left: 20px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 3px;
+          height: 400px;
+          width: 100px;
+        }
+
+        .left-area .card {
+          position: static;
+          width: 105px;
+          height: 65px;
+        }
+
+        /* Right Player */
+        .right-area {
+          position: absolute;
+          right: 20px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 3px;
+          height: 400px;
+          width: 100px;
+        }
+
+        .right-area .card {
+          position: static;
+          width: 105px;
+          height: 65px;
+        }
+
+        /* Center Piles */
+        .piles {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          display: flex;
+          gap: 50px;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .pile {
+          position: relative;
+          width: 100px;
+          height: 150px;
+        }
+
+        .pile .card {
+          width: 75px;
+          height: 120px;
+          top: 0;
+          left: 0;
+        }
+
+        .pile .card:nth-child(2) {
+          z-index: 1;
+          top: 12px;
+          left: 12px;
+        }
+
+        .pile .card:nth-child(1) {
+          z-index: 2;
         }
 
         #draw_pile .card:hover {
-          transform: translateY(-4px) scale(1.05);
-        }
-
-        #discard_pile {
-          position: relative;
-        }
-
-        #player {
-          grid-area: 3/2;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-start;
-          gap: 10px;
-        }
-
-        #player_left {
-          grid-area: 2/1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        #player_top {
-          grid-area: 1/2;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        #player_right {
-          grid-area: 2/3;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .player_hand {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          justify-content: center;
-          align-items: flex-start;
-        }
-
-        #player .player_hand .card {
           cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        #player .player_hand .card:hover {
-          transform: translateY(-8px) scale(1.1);
-        }
-
-        .player-label {
-          color: #aaa;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
         }
 
         .turn-indicator {
           position: absolute;
           top: 20px;
           left: 20px;
-          background: rgba(255,107,91,0.9);
-          color: white;
-          padding: 10px 16px;
-          border-radius: 20px;
+          background: rgba(0, 0, 0, 0.8);
+          color: #fff;
+          padding: 12px 24px;
+          border-radius: 25px;
           font-size: 13px;
           font-weight: bold;
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .turn-indicator.idle {
-          background: rgba(100,100,100,0.7);
+          text-transform: uppercase;
+          z-index: 100;
+          letter-spacing: 1px;
         }
       `}</style>
 
-      {/* Turn Indicator */}
-      <div className={`turn-indicator ${gameState.currentPlayerIndex !== 0 ? 'idle' : ''}`}>
-        {gameState.currentPlayerIndex === 0 ? '🔥 YOUR TURN' : '⏱️ WAITING'}
-      </div>
+      <div className="game-root">
+        <div className="background-layers">
+          <div className="background-gradient"></div>
+          <div className="spiral-background"></div>
+          <GalaxySpiral />
+          <ParticleCanvas />
+          <UnoCardsBackground />
+        </div>
 
-      {/* Game Field */}
-      <div className={`game-field ${gameColor}`}>
-        
-        {/* Player (You) - Bottom */}
-        <div id="player">
-          <span className="player-label">(You)</span>
-          <div className="player_hand">
-            {gameState.players[0].hand.map((card, idx) => (
-              <div 
-                key={card.id} 
-                className={`card ${getCardColor(card.display)}`}
-                onClick={() => onPlayCard(0, idx)}
-                title={card.display}
-              >
-                <span className="card-icon">
+        <div className="content-layer">
+          <div className="turn-indicator">
+            {gameState.currentPlayerIndex === 0
+              ? '👤 Your Turn'
+              : `🤖 ${gameState.players[gameState.currentPlayerIndex].name}`}
+          </div>
+
+          <div className="game-field">
+            <div className="top-area">
+              {gameState.players[1]?.hand.map((_, idx) => (
+                <div key={idx} className="card turned"></div>
+              ))}
+            </div>
+
+            <div className="left-area">
+              {gameState.players[2]?.hand.map((_, idx) => (
+                <div key={idx} className="card turned"></div>
+              ))}
+            </div>
+
+            <div className="piles">
+              <div className="pile" id="draw_pile" onClick={onDrawCard}>
+                <div className="card turned"></div>
+                <div className="card turned"></div>
+              </div>
+
+              <div className="pile">
+                {topDiscard && (
+                  <>
+                    <div className={`card ${getCardColor(topDiscard.display)}`}>
+                      {getCardDisplay(topDiscard.display)}
+                    </div>
+                    <div className="card turned"></div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="right-area">
+              {gameState.players[3]?.hand.map((_, idx) => (
+                <div key={idx} className="card turned"></div>
+              ))}
+            </div>
+
+            <div className="you-area">
+              {gameState.players[0].hand.map((card, idx) => (
+                <div
+                  key={card.id}
+                  className={`card ${getCardColor(card.display)}`}
+                  onClick={() => onPlayCard(0, idx)}
+                  title={card.display}
+                >
                   {getCardDisplay(card.display)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Left Player */}
-        <div id="player_left">
-          <span className="player-label">Left Player</span>
-          <div className="player_hand">
-            {gameState.players[2] && gameState.players[2].hand.map((_, idx) => (
-              <div key={idx} className="card turned">
-                <span className="card-icon"></span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Top Player */}
-        <div id="player_top">
-          <span className="player-label">Top Player</span>
-          <div className="player_hand">
-            {gameState.players[1] && gameState.players[1].hand.map((_, idx) => (
-              <div key={idx} className="card turned">
-                <span className="card-icon"></span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Player */}
-        <div id="player_right">
-          <span className="player-label">Right Player</span>
-          <div className="player_hand">
-            {gameState.players[3] && gameState.players[3].hand.map((_, idx) => (
-              <div key={idx} className="card turned">
-                <span className="card-icon"></span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Piles Area - Center */}
-        <div id="piles_area">
-          {/* Draw Pile */}
-          <div id="draw_pile" onClick={onDrawCard} title="Draw a card">
-            <div className="card turned">
-              <span className="card-icon">+</span>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* Discard Pile */}
-          <div id="discard_pile">
-            {topDiscard && (
-              <div className={`card ${getCardColor(topDiscard.display)}`} title={topDiscard.display}>
-                <span className="card-icon">
-                  {getCardDisplay(topDiscard.display)}
-                </span>
-              </div>
-            )}
-          </div>
         </div>
-
       </div>
     </>
   )
