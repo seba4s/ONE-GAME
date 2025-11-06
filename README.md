@@ -1,19 +1,36 @@
 # UNO - Juego de Cartas Online
 
-Un juego de cartas UNO desarrollado con Next.js 15, TypeScript y Tailwind CSS. Incluye animaciones de partículas, fondo de galaxia espiral y un sistema completo de configuración.
+Un juego de cartas UNO desarrollado con Next.js 15, TypeScript y Tailwind CSS. Incluye animaciones de partículas, fondo de galaxia espiral, sistema de autenticación y gameplay interactivo con 3D perspective.
 
 ## 🎮 Características
 
-- **Interfaz moderna**: Diseño glassmorphism con efectos visuales
-- **Animaciones**: Partículas flotantes y cartas UNO animadas  
+### Autenticación
+- 📧 Login con Email/Username
+- ✍️ Registro de nuevas cuentas
+- 👤 Modo Invitado
+- 🔐 OAuth ready (Google, Facebook, Apple)
+
+### Gameplay
+- 🎴 Sistema de cartas completo (108 cartas UNO)
+- 🎯 Soporte para 2-4 jugadores
+- 👥 Bots de IA
+- 🔄 Gestión de turnos
+- 📊 Sistema de puntuación
+- ⚙️ Configuración previa a la partida (Clásico, Torneo)
+
+### Interfaz
+- **Diseño glassmorphism** con efectos visuales modernos
+- **Animaciones suaves**: Partículas flotantes y cartas animadas
 - **Fondo dinámico**: Espiral de galaxia con gradiente naranja-rojo
-- **Sistema de configuración completo**:
-  - 🔊 Audio (Volumen Master, Efectos, Música, Sonidos de cartas)
-  - 🎨 Visual (Control de brillo)
-  - 🎮 Jugabilidad (Auto-ordenar cartas)
-  - 💬 Interfaz (Tamaño de texto)
-- **Persistencia**: Configuraciones guardadas en localStorage
+- **Perspectiva 3D**: Tablero de juego elevado con rotateX(30deg)
 - **Responsive**: Optimizado para todas las pantallas
+
+### Configuración
+- 🔊 Audio (Volumen Master, Efectos, Música)
+- 🎨 Visual (Control de brillo)
+- 🎮 Jugabilidad (Auto-ordenar cartas, Apilar +2/+4)
+- 💬 Interfaz (Tamaño de texto)
+- 💾 Persistencia en localStorage
 
 ## 🚀 Tecnologías
 
@@ -53,11 +70,22 @@ npm start
 
 ## 🎨 Componentes Principales
 
+### Pantallas de Aplicación
+- `LoginScreen.tsx` - Autenticación (Login, Registro, Invitado)
+- `RoomSelectionScreen.tsx` - Selección entre crear o unirse a sala
+- `GameRoomMenu.tsx` - Configuración de partida (jugadores, preset, opciones)
+- `GamePlay.tsx` - **NUEVO** - Interfaz de juego con soporte para 4 jugadores
+
+### Componentes Visuales
 - `GalaxySpiral.tsx` - Animación de espiral de galaxia
 - `ParticleCanvas.tsx` - Sistema de partículas flotantes
-- `UnoCardsBackground.tsx` - Cartas UNO animadas
-- `SettingsModal.tsx` - Panel de configuración
-- `AudioContext.tsx` - Sistema de audio global
+- `UnoCardsBackground.tsx` - Cartas UNO animadas en fondo
+- `HalftoneWaves.tsx` - Efecto de ondas halftonadas
+- `SettingsModal.tsx` - Panel de configuración global
+
+### Utilidades
+- `AudioContext.tsx` - Sistema de audio global (Context API)
+- `ui/*` - Componentes shadcn/ui (Button, Input, Select, Dialog, etc)
 
 ## 🌟 Efectos Visuales
 
@@ -82,6 +110,81 @@ npm start
 - ✅ Dispositivos móviles y tablets
 - ✅ Pantallas de alta resolución
 - ✅ Modo oscuro/claro
+
+## � Sistema de Juego (GamePlay)
+
+### Mecánicas Implementadas
+- ✅ Distribución de 108 cartas en mazo
+- ✅ Reparto de 7 cartas iniciales por jugador
+- ✅ Sistema de dibujar cartas del mazo
+- ✅ Jugar cartas al pila de descarte
+- ✅ Gestión de turnos automática (4 jugadores)
+- ✅ Interfaz 3D con perspectiva CSS
+
+### Estructura del Tablero
+
+```
+    ┌─────────────────┐
+    │  PLAYER TOP     │ (CPU)
+    │  (Face Down)    │
+├───┼─────────────────┼───┤
+│   │   DRAW PILE     │   │
+│ P │   DISCARD PILE  │ P │
+│ L │   [Current]     │ R │
+│ A │                 │ I │
+│ Y │                 │ G │
+│ E │                 │ H │
+│ R │                 │ T │
+│   │                 │   │
+├───┼─────────────────┼───┤
+    │ YOUR HAND (7)   │ (Interactive)
+    │ [Selectable]    │
+    └─────────────────┘
+```
+
+### Colores de Cartas
+- 🔴 Red (`#dc251c`) - "r"
+- 🟡 Yellow (`#fcf604`) - "y"
+- 🔵 Blue (`#0493de`) - "b"
+- 🟢 Green (`#018d41`) - "g"
+- ⬛ Black (Wilds) - "w"
+
+### Tipos de Cartas (108 Total)
+- **Números (0-9)**: 40 cartas (4 colores × 10 valores)
+- **Robar 2 (+2)**: 8 cartas
+- **Saltar**: 8 cartas
+- **Invertir**: 8 cartas
+- **Comodín**: 4 cartas
+- **Comodín +4**: 4 cartas
+
+Para más detalles, ver [GAMEPLAY_COMPONENT.md](GAMEPLAY_COMPONENT.md)
+
+## �🎯 Flujo de Navegación
+
+```
+┌─────────────────┐
+│  Pantalla Inicio│
+│   (Main Menu)   │
+└────────┬────────┘
+         │
+    ┌────┴─────┐
+    │ ¿Logged? │
+    └─┬──────┬─┘
+      NO    SI
+      │      │
+      ▼      ▼
+   Login    Room
+  Screen  Selection
+    │      │
+    └──┬───┘
+       ▼
+   GameRoom
+    Menu
+    (Config)
+       │
+       ▼
+   GamePlay
+    (In-Game)
 
 ## 🤝 Contribución
 
