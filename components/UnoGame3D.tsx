@@ -71,7 +71,7 @@ class Card {
     return this.mesh;
   }
 
-  canPlayOn(otherCard: CardData): boolean {
+  canPlayOn(otherCard: Card): boolean {
     if (this.color === 'wild') return true;
     if (this.color === otherCard.color) return true;
     if (this.value === otherCard.value) return true;
@@ -104,7 +104,7 @@ class Player {
     }
   }
 
-  getPlayableCards(topCard: CardData): Card[] {
+  getPlayableCards(topCard: Card): Card[] {
     return this.hand.filter(card => card.canPlayOn(topCard));
   }
 
@@ -340,7 +340,7 @@ const UnoGame3D: React.FC = () => {
   const [drawPile, setDrawPile] = useState<Card[]>([]);
   const [discardPile, setDiscardPile] = useState<Card[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [currentCard, setCurrentCard] = useState<CardData | null>(null);
+  const [currentCard, setCurrentCard] = useState<Card | null>(null);
   const [gameEnded, setGameEnded] = useState(false);
   const [tableCards, setTableCards] = useState<TableCard[]>([]);
   const [waitingForColorSelection, setWaitingForColorSelection] = useState(false);
@@ -358,7 +358,7 @@ const UnoGame3D: React.FC = () => {
     drawPile: [] as Card[],
     discardPile: [] as Card[],
     players: [] as Player[],
-    currentCard: null as CardData | null,
+    currentCard: null as Card | null,
     gameEnded: false,
     tableCards: [] as TableCard[],
     waitingForColorSelection: false,
@@ -515,9 +515,9 @@ const UnoGame3D: React.FC = () => {
           card = gameStateRef.current.drawPile.pop()!;
         } while (card.type === 'wild');
         
-        gameStateRef.current.currentCard = {color: card.color, value: card.value, type: card.type};
+        gameStateRef.current.currentCard = card;
         gameStateRef.current.discardPile.push(card);
-        setCurrentCard(gameStateRef.current.currentCard);
+        setCurrentCard(card);
         addCardToTable(card);
         
         gameStateRef.current.currentPlayer = 0;
@@ -617,7 +617,7 @@ const UnoGame3D: React.FC = () => {
           setShowColorPicker(true);
         } else {
           state.currentCard!.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-          setCurrentCard({...state.currentCard!});
+          setCurrentCard(state.currentCard);
           showMessageFunc(`🌈 Color changed to ${state.currentCard!.color}!`);
         }
         break;
@@ -655,8 +655,8 @@ const UnoGame3D: React.FC = () => {
 
     player.removeCard(card);
     state.discardPile.push(card);
-    state.currentCard = {color: card.color, value: card.value, type: card.type};
-    setCurrentCard(state.currentCard);
+    state.currentCard = card;
+    setCurrentCard(card);
 
     addCardToTable(card);
     handleSpecialCard(card);
@@ -720,7 +720,7 @@ const UnoGame3D: React.FC = () => {
   const selectWildColor = useCallback((color: CardColor) => {
     const state = gameStateRef.current;
     state.currentCard!.color = color;
-    setCurrentCard({...state.currentCard!});
+    setCurrentCard(state.currentCard);
     showMessageFunc(`🌈 Color changed to ${color}!`);
     state.waitingForColorSelection = false;
     setWaitingForColorSelection(false);
