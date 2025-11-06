@@ -1,36 +1,50 @@
-import { Card, CardColor, CardNumber, GameState } from './gameTypes'
+import { Card, CardColor, CardNumber, CardAction, GameState } from './gameTypes'
 
 const createDeck = (): Card[] => {
-  const deck: Card[] = []
-  const colors: CardColor[] = ['red', 'yellow', 'blue', 'green']
-  let id = 0
+  // UNO deck original format
+  const DECK_STRINGS = [
+    "0r", "0y", "0b", "0g", // 0's
+    "1r", "1r", "1y", "1y", "1b", "1b", "1g", "1g", // 1's
+    "2r", "2r", "2y", "2y", "2b", "2b", "2g", "2g", // 2's  
+    "3r", "3r", "3y", "3y", "3b", "3b", "3g", "3g", // 3's
+    "4r", "4r", "4y", "4y", "4b", "4b", "4g", "4g", // 4's
+    "5r", "5r", "5y", "5y", "5b", "5b", "5g", "5g", // 5's
+    "6r", "6r", "6y", "6y", "6b", "6b", "6g", "6g", // 6's
+    "7r", "7r", "7y", "7y", "7b", "7b", "7g", "7g", // 7's
+    "8r", "8r", "8y", "8y", "8b", "8b", "8g", "8g", // 8's
+    "9r", "9r", "9y", "9y", "9b", "9b", "9g", "9g", // 9's
+    "d2r", "d2r", "d2y", "d2y", "d2b", "d2b", "d2g", "d2g", // Draw Two's
+    "sr", "sr", "sy", "sy", "sb", "sb", "sg", "sg", // Skip's
+    "rr", "rr", "ry", "ry", "rb", "rb", "rg", "rg", // Reverse's
+    "w", "w", "w", "w", // Wild's
+    "w+4", "w+4", "w+4", "w+4" // Wild +4's
+  ]
 
-  colors.forEach(color => {
-    deck.push({ id: `${id++}`, color, type: '0' as CardNumber, display: '0' })
-    for (let num = 1; num <= 9; num++) {
-      for (let i = 0; i < 2; i++) {
-        deck.push({
-          id: `${id++}`,
-          color,
-          type: num.toString() as CardNumber,
-          display: num.toString()
-        })
-      }
+  const deck: Card[] = DECK_STRINGS.map((cardStr, idx) => {
+    const getColor = (str: string): CardColor => {
+      if (str.includes('r')) return 'red'
+      if (str.includes('y')) return 'yellow'
+      if (str.includes('b')) return 'blue'
+      if (str.includes('g')) return 'green'
+      return 'black'
+    }
+
+    const getType = (str: string): CardNumber | CardAction => {
+      if (str.includes('d2')) return 'draw2'
+      if (str.includes('s')) return 'skip'
+      if (str.includes('r') && str.length > 2) return 'reverse'
+      if (str.includes('w+4')) return 'wild_draw4'
+      if (str === 'w') return 'wild'
+      return str.replace(/[rgby]/g, '') as CardNumber
+    }
+
+    return {
+      id: `card_${idx}`,
+      color: getColor(cardStr),
+      type: getType(cardStr),
+      display: cardStr
     }
   })
-
-  colors.forEach(color => {
-    for (let i = 0; i < 2; i++) {
-      deck.push({ id: `${id++}`, color, type: 'skip', display: 'SKIP' })
-      deck.push({ id: `${id++}`, color, type: 'reverse', display: 'REV' })
-      deck.push({ id: `${id++}`, color, type: 'draw2', display: '+2' })
-    }
-  })
-
-  for (let i = 0; i < 4; i++) {
-    deck.push({ id: `${id++}`, color: 'black', type: 'wild', display: 'W' })
-    deck.push({ id: `${id++}`, color: 'black', type: 'wild_draw4', display: 'W+4' })
-  }
 
   return deck.sort(() => Math.random() - 0.5)
 }

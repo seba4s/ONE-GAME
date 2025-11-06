@@ -1,95 +1,303 @@
 'use client'
 
 import { GameState } from '@/lib/gameTypes'
-import CardComp from './CardComp'
 
-interface GameBoardProps {
+interface GameRoomProps {
   gameState: GameState
   onPlayCard: (playerIndex: number, cardIndex: number) => void
   onDrawCard: () => void
 }
 
-export default function GameBoard({
+export default function GameRoom({
   gameState,
   onPlayCard,
   onDrawCard
-}: GameBoardProps) {
+}: GameRoomProps) {
+  
+  // Convertir card string a color class
+  const getCardColor = (cardStr: string) => {
+    if (cardStr.includes('r')) return 'red'
+    if (cardStr.includes('y')) return 'yellow' 
+    if (cardStr.includes('b')) return 'blue'
+    if (cardStr.includes('g')) return 'green'
+    if (cardStr.includes('w')) return 'black'
+    return 'black'
+  }
+
+  // Obtener número/símbolo de la carta
+  const getCardDisplay = (cardStr: string) => {
+    if (cardStr.includes('d2')) return '+2'
+    if (cardStr.includes('s')) return 'SKIP'
+    if (cardStr.includes('r') && cardStr.length > 2) return 'REV'
+    if (cardStr.includes('w+4')) return 'W+4'
+    if (cardStr === 'w') return 'W'
+    return cardStr.replace(/[rgby]/g, '')
+  }
+
   const topDiscard = gameState.discardPile[gameState.discardPile.length - 1]
-  const myHand = gameState.players[0].hand
-  const topPlayer = gameState.players[1]
-  const leftPlayer = gameState.players[2]
-  const rightPlayer = gameState.players[3]
+  const gameColor = getCardColor(topDiscard.display)
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 flex flex-col items-center justify-center overflow-hidden relative">
-      
-      {/* TOP PLAYER */}
-      <div className="absolute top-8 flex gap-1">
-        {topPlayer.hand.map((_, idx) => (
-          <div key={`top-${idx}`} style={{ transform: `rotateY(${Math.random() * 20}deg)` }}>
-            <CardComp card={topPlayer.hand[idx]} faceDown={true} />
-          </div>
-        ))}
+    <>
+      {/* CSS Styles */}
+      <style jsx>{`
+        .game-field {
+          height: 100vh;
+          display: grid;
+          justify-content: center;
+          align-content: center;
+          grid-gap: 0.5em;
+          grid-template-columns: 12em 24em 12em;
+          grid-template-rows: 12em 24em 12em;
+          background: #2a2a2a;
+        }
+
+        .card {
+          display: inline-block;
+          background-color: #fff;
+          border: 1px solid #ccc;
+          border-radius: 0.8em;
+          padding: 0.3em;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+          transition: 200ms;
+          position: relative;
+        }
+
+        .card .bckg {
+          width: 5em;
+          height: 7.678em;
+          border-radius: 0.5em;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .card .bckg::before {
+          content: '';
+          width: 5em;
+          height: 6.5em;
+          background-color: #fff;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%) rotate(10deg);
+          transform-origin: center center;
+          border-radius: 90% 40%;
+        }
+
+        .card .center-icon {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 1.5em;
+          font-weight: bold;
+        }
+
+        .card.red { color: #dc251c; }
+        .card.red .bckg { background-color: #dc251c; }
+        
+        .card.yellow { color: #fcf604; }
+        .card.yellow .bckg { background-color: #fcf604; }
+        
+        .card.blue { color: #0493de; }
+        .card.blue .bckg { background-color: #0493de; }
+        
+        .card.green { color: #018d41; }
+        .card.green .bckg { background-color: #018d41; }
+        
+        .card.black { color: #1f1b18; }
+        .card.black .bckg { background-color: #1f1b18; }
+
+        .card.turned .bckg { background-color: #1f1b18; }
+        .card.turned .bckg::before { background-color: #dc251c; }
+
+        #piles_area {
+          grid-area: 2/2;
+          position: relative;
+          border-radius: 4em;
+          transition: 200ms;
+        }
+
+        .game-field.red #piles_area { background-color: rgba(220,37,28,0.4); }
+        .game-field.yellow #piles_area { background-color: rgba(252,246,4,0.4); }
+        .game-field.blue #piles_area { background-color: rgba(4,147,222,0.4); }
+        .game-field.green #piles_area { background-color: rgba(1,141,65,0.4); }
+
+        #draw_pile {
+          position: absolute;
+          left: 5em;
+          top: 5em;
+        }
+
+        #draw_pile .card {
+          position: absolute;
+          cursor: pointer;
+        }
+
+        #draw_pile .card:hover {
+          transform: translateY(-0.5em);
+        }
+
+        #discard_pile {
+          position: absolute;
+          left: 12em;
+          top: 5.7em;
+        }
+
+        #discard_pile .card {
+          position: absolute;
+        }
+
+        #player { grid-area: 3/2; }
+        #player_left { grid-area: 2/1; }
+        #player_top { grid-area: 1/2; }
+        #player_right { grid-area: 2/3; }
+
+        .player_hand {
+          position: relative;
+        }
+
+        .player_hand .card {
+          position: absolute;
+        }
+
+        .player_hand .card:nth-child(1) { left: 2.2em; }
+        .player_hand .card:nth-child(2) { left: 4.4em; }
+        .player_hand .card:nth-child(3) { left: 6.6em; }
+        .player_hand .card:nth-child(4) { left: 8.8em; }
+        .player_hand .card:nth-child(5) { left: 11em; }
+        .player_hand .card:nth-child(6) { left: 13.2em; }
+        .player_hand .card:nth-child(7) { left: 15.4em; }
+
+        #player .player_hand .card {
+          cursor: pointer;
+        }
+
+        #player .player_hand .card:hover {
+          transform-origin: left bottom;
+          transform: rotate(-10deg) translateY(-0.5em);
+        }
+
+        #player .player_hand .card:hover ~ .card {
+          transform: translateX(2em);
+        }
+
+        #player_left .player_hand {
+          transform-origin: left bottom;
+          transform: rotate(90deg) translateY(-10em);
+        }
+
+        #player_top .player_hand {
+          transform: translateY(1em);
+        }
+
+        #player_right .player_hand {
+          transform-origin: left bottom;
+          transform: rotate(-90deg) translate(-24em, 1em);
+        }
+
+        /* Turn indicator */
+        .turn-indicator {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          background: rgba(0,0,0,0.7);
+          color: white;
+          padding: 10px 20px;
+          border-radius: 10px;
+          font-size: 14px;
+          z-index: 1000;
+        }
+      `}</style>
+
+      {/* Turn Indicator */}
+      <div className="turn-indicator">
+        {gameState.currentPlayerIndex === 0 ? '🔥 YOUR TURN' : `CPU ${gameState.currentPlayerIndex} turn`}
       </div>
 
-      {/* LEFT PLAYER */}
-      <div className="absolute left-8 flex flex-col gap-1">
-        {leftPlayer.hand.map((_, idx) => (
-          <div key={`left-${idx}`} style={{ transform: `rotateZ(90deg)` }}>
-            <CardComp card={leftPlayer.hand[idx]} faceDown={true} />
+      {/* Game Field */}
+      <div className={`game-field ${gameColor}`}>
+        
+        {/* Player (You) - Bottom */}
+        <div id="player">
+          (You)
+          <div className="player_hand">
+            {gameState.players[0].hand.map((card, idx) => (
+              <div 
+                key={card.id} 
+                className={`card ${getCardColor(card.display)}`}
+                onClick={() => onPlayCard(0, idx)}
+              >
+                <div className="bckg">
+                  <div className="center-icon">
+                    {getCardDisplay(card.display)}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      {/* RIGHT PLAYER */}
-      <div className="absolute right-8 flex flex-col gap-1">
-        {rightPlayer.hand.map((_, idx) => (
-          <div key={`right-${idx}`} style={{ transform: `rotateZ(-90deg)` }}>
-            <CardComp card={rightPlayer.hand[idx]} faceDown={true} />
-          </div>
-        ))}
-      </div>
-
-      {/* CENTER PILES */}
-      <div className="flex gap-16 items-center justify-center">
-        {/* DRAW PILE */}
-        <div className="cursor-pointer relative" onClick={onDrawCard}>
-          <div className="absolute -bottom-6 -right-6 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
-            {gameState.drawPile.length}
-          </div>
-          <CardComp card={{ id: 'draw', color: 'black', type: 'wild', display: 'DRAW' }} faceDown={true} />
         </div>
 
-        {/* DISCARD PILE */}
-        <div className="relative">
-          {topDiscard && <CardComp card={topDiscard} />}
-          <div className="absolute -bottom-6 -right-6 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-            {gameState.discardPile.length}
+        {/* Left Player */}
+        <div id="player_left">
+          Left Player
+          <div className="player_hand">
+            {gameState.players[2] && gameState.players[2].hand.map((_, idx) => (
+              <div key={idx} className="card turned">
+                <div className="bckg"></div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* MY HAND */}
-      <div className="absolute bottom-8 flex gap-2 px-4 justify-center flex-wrap max-w-full">
-        {myHand.map((card, idx) => (
-          <div 
-            key={card.id}
-            style={{ transform: `rotateZ(${(idx - myHand.length/2) * 8}deg)` }}
-            className="hover:translate-y-(-2)"
-          >
-            <CardComp
-              card={card}
-              onClick={() => onPlayCard(0, idx)}
-              isClickable={gameState.currentPlayerIndex === 0}
-            />
+        {/* Top Player */}
+        <div id="player_top">
+          Top Player
+          <div className="player_hand">
+            {gameState.players[1] && gameState.players[1].hand.map((_, idx) => (
+              <div key={idx} className="card turned">
+                <div className="bckg"></div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* TURN INDICATOR */}
-      <div className="absolute top-4 left-4 bg-white/20 text-white px-4 py-2 rounded-lg backdrop-blur">
-        {gameState.currentPlayerIndex === 0 ? '🔥 YOUR TURN' : `CPU ${gameState.currentPlayerIndex} playing...`}
+        {/* Right Player */}
+        <div id="player_right">
+          Right Player
+          <div className="player_hand">
+            {gameState.players[3] && gameState.players[3].hand.map((_, idx) => (
+              <div key={idx} className="card turned">
+                <div className="bckg"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Piles Area - Center */}
+        <div id="piles_area">
+          {/* Draw Pile */}
+          <div id="draw_pile" onClick={onDrawCard}>
+            <div className="card turned">
+              <div className="bckg"></div>
+            </div>
+          </div>
+
+          {/* Discard Pile */}
+          <div id="discard_pile">
+            {topDiscard && (
+              <div className={`card ${getCardColor(topDiscard.display)}`}>
+                <div className="bckg">
+                  <div className="center-icon">
+                    {getCardDisplay(topDiscard.display)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
-    </div>
+    </>
   )
 }
