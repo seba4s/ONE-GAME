@@ -41,182 +41,203 @@ export default function GameRoom({
     <>
       {/* CSS Styles */}
       <style jsx>{`
+        body {
+          margin: 0;
+          padding: 0;
+        }
+
         .game-field {
           height: 100vh;
           display: grid;
           justify-content: center;
           align-content: center;
-          grid-gap: 0.5em;
-          grid-template-columns: 12em 24em 12em;
-          grid-template-rows: 12em 24em 12em;
-          background: #2a2a2a;
-        }
-
-        .card {
-          display: inline-block;
-          background-color: #fff;
-          border: 1px solid #ccc;
-          border-radius: 0.8em;
-          padding: 0.3em;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-          transition: 200ms;
+          grid-gap: 1em;
+          grid-template-columns: 150px 350px 150px;
+          grid-template-rows: 150px 350px 150px;
+          background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+          font-family: Arial, sans-serif;
           position: relative;
         }
 
-        .card .bckg {
-          width: 5em;
-          height: 7.678em;
-          border-radius: 0.5em;
-          overflow: hidden;
+        .card {
+          width: 80px;
+          height: 123px;
+          border: 2px solid #444;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.4);
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
-          background-color: #fff;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          overflow: hidden;
         }
 
-        .card .bckg::before {
+        .card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        }
+
+        .card.turned {
+          background: linear-gradient(135deg, #1a1a3e 0%, #0d0d26 100%);
+          border: 2px solid #2a2a5a;
+        }
+
+        .card.turned::before {
           content: '';
-          width: 5em;
-          height: 6.5em;
-          background-color: #fff;
           position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%, -50%) rotate(10deg);
-          transform-origin: center center;
-          border-radius: 90% 40%;
-          z-index: 1;
+          width: 70%;
+          height: 70%;
+          border: 2px solid #dc251c;
+          border-radius: 4px;
+          opacity: 0.5;
         }
 
-        .card .center-icon {
-          position: relative;
-          font-size: 2.5em;
+        .card.red {
+          background: linear-gradient(135deg, #ff6b5b 0%, #dc251c 100%);
+          color: #fff;
+        }
+
+        .card.yellow {
+          background: linear-gradient(135deg, #ffff5f 0%, #fcf604 100%);
+          color: #000;
+        }
+
+        .card.blue {
+          background: linear-gradient(135deg, #5db3ff 0%, #0493de 100%);
+          color: #fff;
+        }
+
+        .card.green {
+          background: linear-gradient(135deg, #5abf7e 0%, #018d41 100%);
+          color: #fff;
+        }
+
+        .card.black {
+          background: linear-gradient(135deg, #333 0%, #1f1b18 100%);
+          color: #fff;
+        }
+
+        .card-icon {
+          font-size: 24px;
           font-weight: bold;
-          z-index: 10;
           line-height: 1;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          z-index: 10;
         }
-
-        .card.red { color: #dc251c; }
-        .card.red .bckg { background-color: #dc251c; }
-        
-        .card.yellow { color: #fcf604; }
-        .card.yellow .bckg { background-color: #fcf604; }
-        
-        .card.blue { color: #0493de; }
-        .card.blue .bckg { background-color: #0493de; }
-        
-        .card.green { color: #018d41; }
-        .card.green .bckg { background-color: #018d41; }
-        
-        .card.black { color: #1f1b18; }
-        .card.black .bckg { background-color: #1f1b18; }
-
-        .card.turned .bckg { background-color: #1f1b18; }
-        .card.turned .bckg::before { background-color: #dc251c; }
 
         #piles_area {
           grid-area: 2/2;
-          position: relative;
-          border-radius: 4em;
-          transition: 200ms;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 40px;
+          background: rgba(0,0,0,0.3);
+          border-radius: 20px;
+          padding: 20px;
         }
 
-        .game-field.red #piles_area { background-color: rgba(220,37,28,0.4); }
-        .game-field.yellow #piles_area { background-color: rgba(252,246,4,0.4); }
-        .game-field.blue #piles_area { background-color: rgba(4,147,222,0.4); }
-        .game-field.green #piles_area { background-color: rgba(1,141,65,0.4); }
-
         #draw_pile {
-          position: absolute;
-          left: 5em;
-          top: 5em;
+          position: relative;
         }
 
         #draw_pile .card {
-          position: absolute;
           cursor: pointer;
         }
 
         #draw_pile .card:hover {
-          transform: translateY(-0.5em);
+          transform: translateY(-4px) scale(1.05);
         }
 
         #discard_pile {
-          position: absolute;
-          left: 12em;
-          top: 5.7em;
-        }
-
-        #discard_pile .card {
-          position: absolute;
-        }
-
-        #player { grid-area: 3/2; }
-        #player_left { grid-area: 2/1; }
-        #player_top { grid-area: 1/2; }
-        #player_right { grid-area: 2/3; }
-
-        .player_hand {
           position: relative;
         }
 
-        .player_hand .card {
-          position: absolute;
+        #player {
+          grid-area: 3/2;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 10px;
         }
 
-        .player_hand .card:nth-child(1) { left: 2.2em; }
-        .player_hand .card:nth-child(2) { left: 4.4em; }
-        .player_hand .card:nth-child(3) { left: 6.6em; }
-        .player_hand .card:nth-child(4) { left: 8.8em; }
-        .player_hand .card:nth-child(5) { left: 11em; }
-        .player_hand .card:nth-child(6) { left: 13.2em; }
-        .player_hand .card:nth-child(7) { left: 15.4em; }
+        #player_left {
+          grid-area: 2/1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        #player_top {
+          grid-area: 1/2;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        #player_right {
+          grid-area: 2/3;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .player_hand {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: flex-start;
+        }
 
         #player .player_hand .card {
           cursor: pointer;
+          transition: all 0.2s ease;
         }
 
         #player .player_hand .card:hover {
-          transform-origin: left bottom;
-          transform: rotate(-10deg) translateY(-0.5em);
+          transform: translateY(-8px) scale(1.1);
         }
 
-        #player .player_hand .card:hover ~ .card {
-          transform: translateX(2em);
+        .player-label {
+          color: #aaa;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
         }
 
-        #player_left .player_hand {
-          transform-origin: left bottom;
-          transform: rotate(90deg) translateY(-10em);
-        }
-
-        #player_top .player_hand {
-          transform: translateY(1em);
-        }
-
-        #player_right .player_hand {
-          transform-origin: left bottom;
-          transform: rotate(-90deg) translate(-24em, 1em);
-        }
-
-        /* Turn indicator */
         .turn-indicator {
           position: absolute;
           top: 20px;
           left: 20px;
-          background: rgba(0,0,0,0.7);
+          background: rgba(255,107,91,0.9);
           color: white;
-          padding: 10px 20px;
-          border-radius: 10px;
-          font-size: 14px;
+          padding: 10px 16px;
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: bold;
           z-index: 1000;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .turn-indicator.idle {
+          background: rgba(100,100,100,0.7);
         }
       `}</style>
 
       {/* Turn Indicator */}
-      <div className="turn-indicator">
-        {gameState.currentPlayerIndex === 0 ? '🔥 YOUR TURN' : `CPU ${gameState.currentPlayerIndex} turn`}
+      <div className={`turn-indicator ${gameState.currentPlayerIndex !== 0 ? 'idle' : ''}`}>
+        {gameState.currentPlayerIndex === 0 ? '🔥 YOUR TURN' : '⏱️ WAITING'}
       </div>
 
       {/* Game Field */}
@@ -224,19 +245,18 @@ export default function GameRoom({
         
         {/* Player (You) - Bottom */}
         <div id="player">
-          (You)
+          <span className="player-label">(You)</span>
           <div className="player_hand">
             {gameState.players[0].hand.map((card, idx) => (
               <div 
                 key={card.id} 
                 className={`card ${getCardColor(card.display)}`}
                 onClick={() => onPlayCard(0, idx)}
+                title={card.display}
               >
-                <div className="bckg">
-                  <span className="center-icon">
-                    {getCardDisplay(card.display)}
-                  </span>
-                </div>
+                <span className="card-icon">
+                  {getCardDisplay(card.display)}
+                </span>
               </div>
             ))}
           </div>
@@ -244,11 +264,11 @@ export default function GameRoom({
 
         {/* Left Player */}
         <div id="player_left">
-          Left Player
+          <span className="player-label">Left Player</span>
           <div className="player_hand">
             {gameState.players[2] && gameState.players[2].hand.map((_, idx) => (
               <div key={idx} className="card turned">
-                <div className="bckg"></div>
+                <span className="card-icon"></span>
               </div>
             ))}
           </div>
@@ -256,11 +276,11 @@ export default function GameRoom({
 
         {/* Top Player */}
         <div id="player_top">
-          Top Player
+          <span className="player-label">Top Player</span>
           <div className="player_hand">
             {gameState.players[1] && gameState.players[1].hand.map((_, idx) => (
               <div key={idx} className="card turned">
-                <div className="bckg"></div>
+                <span className="card-icon"></span>
               </div>
             ))}
           </div>
@@ -268,11 +288,11 @@ export default function GameRoom({
 
         {/* Right Player */}
         <div id="player_right">
-          Right Player
+          <span className="player-label">Right Player</span>
           <div className="player_hand">
             {gameState.players[3] && gameState.players[3].hand.map((_, idx) => (
               <div key={idx} className="card turned">
-                <div className="bckg"></div>
+                <span className="card-icon"></span>
               </div>
             ))}
           </div>
@@ -281,21 +301,19 @@ export default function GameRoom({
         {/* Piles Area - Center */}
         <div id="piles_area">
           {/* Draw Pile */}
-          <div id="draw_pile" onClick={onDrawCard}>
+          <div id="draw_pile" onClick={onDrawCard} title="Draw a card">
             <div className="card turned">
-              <div className="bckg"></div>
+              <span className="card-icon">+</span>
             </div>
           </div>
 
           {/* Discard Pile */}
           <div id="discard_pile">
             {topDiscard && (
-              <div className={`card ${getCardColor(topDiscard.display)}`}>
-                <div className="bckg">
-                  <span className="center-icon">
-                    {getCardDisplay(topDiscard.display)}
-                  </span>
-                </div>
+              <div className={`card ${getCardColor(topDiscard.display)}`} title={topDiscard.display}>
+                <span className="card-icon">
+                  {getCardDisplay(topDiscard.display)}
+                </span>
               </div>
             )}
           </div>
