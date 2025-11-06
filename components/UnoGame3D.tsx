@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 
 // Types
@@ -17,6 +17,11 @@ interface PlayerData {
   isAI: boolean;
   hand: Card[];
   position: { x: number; z: number };
+}
+
+interface TableCard {
+  card: Card;
+  mesh: THREE.Mesh;
 }
 
 // Card class
@@ -66,7 +71,7 @@ class Card {
     return this.mesh;
   }
 
-  canPlayOn(otherCard: Card): boolean {
+  canPlayOn(otherCard: CardData): boolean {
     if (this.color === 'wild') return true;
     if (this.color === otherCard.color) return true;
     if (this.value === otherCard.value) return true;
@@ -99,7 +104,7 @@ class Player {
     }
   }
 
-  getPlayableCards(topCard: Card): Card[] {
+  getPlayableCards(topCard: CardData): Card[] {
     return this.hand.filter(card => card.canPlayOn(topCard));
   }
 
@@ -335,15 +340,30 @@ const UnoGame3D: React.FC = () => {
   const [drawPile, setDrawPile] = useState<Card[]>([]);
   const [discardPile, setDiscardPile] = useState<Card[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [currentCard, setCurrentCard] = useState<Card | null>(null);
+  const [currentCard, setCurrentCard] = useState<CardData | null>(null);
   const [gameEnded, setGameEnded] = useState(false);
-  const [tableCards, setTableCards] = useState<Array<{ card: Card; mesh: THREE.Mesh }>>([]);
+  const [tableCards, setTableCards] = useState<TableCard[]>([]);
   const [waitingForColorSelection, setWaitingForColorSelection] = useState(false);
   const [aiPiles, setAiPiles] = useState<AICardPile[]>([]);
   const [dealingAnimation, setDealingAnimation] = useState(false);
   const [gameMessage, setGameMessage] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [winner, setWinner] = useState<Player | null>(null);
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+
+  // Refs for mutable game state
+  const gameStateRef = useRef({
+    currentPlayer: 0,
+    gameDirection: 1,
+    drawPile: [] as Card[],
+    discardPile: [] as Card[],
+    players: [] as Player[],
+    currentCard: null as CardData | null,
+    gameEnded: false,
+    tableCards: [] as TableCard[],
+    waitingForColorSelection: false,
+    aiPiles: [] as AICardPile[],
+  });
 
   // Initialize Three.js
   useEffect(() => {
@@ -367,6 +387,12 @@ const UnoGame3D: React.FC = () => {
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.1;
+    directionalLight.shadow.camera.far = 50;
+    directionalLight.shadow.camera.left = -15;
+    directionalLight.shadow.camera.right = 15;
+    directionalLight.shadow.camera.top = 15;
+    directionalLight.shadow.camera.bottom = -15;
     scene.add(directionalLight);
 
     const pointLight = new THREE.PointLight(0xffd700, 0.8, 30);
@@ -423,23 +449,299 @@ const UnoGame3D: React.FC = () => {
     };
   }, []);
 
-  const showMessageFunc = (message: string) => {
+  const showMessageFunc = useCallback((message: string) => {
     setGameMessage(message);
     setTimeout(() => setGameMessage(''), 2000);
-  };
+  }, []);
 
-  const initializeGame = () => {
+  const addCardToTable = useCallback((card: Card) => {
+    if (!sceneRef.current || !cardBackTextureRef.current) return;
+
+    const mesh = card.createMesh(true, cardBackTextureRef.current);
+    const currentTableCards = gameStateRef.current.tableCards;
+    
+    mesh.position.set(0, -1.5 + (currentTableCards.length * 0.1), 0);
+    mesh.rotation.x = -Math.PI / 2;
+    
+    sceneRef.current.add(mesh);
+    
+    const newTableCard = { card, mesh };
+    gameStateRef.current.tableCards.push(newTableCard);
+    setTableCards([...gameStateRef.current.tableCards]);
+  }, []);
+
+  const animateCardToPlayer = useCallback((card: Card) => {
+    if (!sceneRef.current || !cardBackTextureRef.current) return;
+
+    const mesh = card.createMesh(false, cardBackTextureRef.current);
+    mesh.position.set(0, 5, 0);
+    sceneRef.current.add(mesh);
+    
+    const startPos = {x: 0, y: 5, z: 0};
+    const endPos = {x: 0, y: 1, z: 8};
+    const duration = 500;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      mesh.position.x = startPos.x + (endPos.x - startPos.x) * easeProgress;
+      mesh.position.y = startPos.y + (endPos.y - startPos.y) * easeProgress;
+      mesh.position.z = startPos.z + (endPos.z - startPos.z) * easeProgress;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        sceneRef.current?.remove(mesh);
+      }
+    };
+    
+    animate();
+  }, []);
+
+  const dealCards = useCallback(() => {
+    const totalCards = gameStateRef.current.players.length * 7;
+    let cardIndex = 0;
+    
+    const dealNextCard = () => {
+      if (cardIndex >= totalCards) {
+        setDealingAnimation(false);
+        
+        let card: Card;
+        do {
+          card = gameStateRef.current.drawPile.pop()!;
+        } while (card.type === 'wild');
+        
+        gameStateRef.current.currentCard = {color: card.color, value: card.value, type: card.type};
+        gameStateRef.current.discardPile.push(card);
+        setCurrentCard(gameStateRef.current.currentCard);
+        addCardToTable(card);
+        
+        gameStateRef.current.currentPlayer = 0;
+        gameStateRef.current.gameDirection = 1;
+        gameStateRef.current.gameEnded = false;
+        gameStateRef.current.waitingForColorSelection = false;
+        
+        setCurrentPlayer(0);
+        setGameDirection(1);
+        setGameEnded(false);
+        setWaitingForColorSelection(false);
+        setUpdateTrigger(prev => prev + 1);
+        
+        nextTurn();
+        return;
+      }
+      
+      const playerIndex = cardIndex % gameStateRef.current.players.length;
+      const card = gameStateRef.current.drawPile.pop()!;
+      gameStateRef.current.players[playerIndex].addCard(card);
+      
+      if (playerIndex > 0) {
+        gameStateRef.current.aiPiles[playerIndex - 1].addCard(
+          card, 
+          sceneRef.current!, 
+          cardBackTextureRef.current!
+        );
+      } else {
+        animateCardToPlayer(card);
+      }
+      
+      cardIndex++;
+      setTimeout(dealNextCard, 200);
+    };
+    
+    dealNextCard();
+  }, [addCardToTable, animateCardToPlayer]);
+
+  const reshuffleDeck = useCallback(() => {
+    if (gameStateRef.current.discardPile.length <= 1) return;
+    
+    const topCard = gameStateRef.current.discardPile.pop()!;
+    gameStateRef.current.drawPile = [...gameStateRef.current.discardPile];
+    gameStateRef.current.discardPile = [topCard];
+    shuffleArray(gameStateRef.current.drawPile);
+    setDrawPile([...gameStateRef.current.drawPile]);
+    setDiscardPile([topCard]);
+    showMessageFunc('🔄 Deck reshuffled!');
+  }, [showMessageFunc]);
+
+  const drawCardsFunc = useCallback((playerIndex: number, count: number) => {
+    const player = gameStateRef.current.players[playerIndex];
+    for (let i = 0; i < count; i++) {
+      if (gameStateRef.current.drawPile.length === 0) {
+        reshuffleDeck();
+      }
+      const card = gameStateRef.current.drawPile.pop()!;
+      player.addCard(card);
+      
+      if (playerIndex > 0) {
+        gameStateRef.current.aiPiles[playerIndex - 1].addCard(
+          card,
+          sceneRef.current!,
+          cardBackTextureRef.current!
+        );
+      }
+    }
+    setUpdateTrigger(prev => prev + 1);
+  }, [reshuffleDeck]);
+
+  const handleSpecialCard = useCallback((card: Card) => {
+    const state = gameStateRef.current;
+    
+    switch (card.value) {
+      case 'reverse':
+        state.gameDirection *= -1;
+        setGameDirection(state.gameDirection);
+        showMessageFunc('🔄 Direction reversed!');
+        break;
+      case 'skip':
+        showMessageFunc('⏭️ Next player skipped!');
+        break;
+      case 'draw2':
+        const nextPlayer = (state.currentPlayer + state.gameDirection + state.players.length) % state.players.length;
+        drawCardsFunc(nextPlayer, 2);
+        showMessageFunc(`📥 ${state.players[nextPlayer].name} draws 2 cards!`);
+        break;
+      case 'wild4':
+        const targetPlayer = (state.currentPlayer + state.gameDirection + state.players.length) % state.players.length;
+        drawCardsFunc(targetPlayer, 4);
+        showMessageFunc(`📥 ${state.players[targetPlayer].name} draws 4 cards!`);
+        // Fall through to wild
+      case 'wild':
+        if (state.currentPlayer === 0) {
+          state.waitingForColorSelection = true;
+          setWaitingForColorSelection(true);
+          setShowColorPicker(true);
+        } else {
+          state.currentCard!.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          setCurrentCard({...state.currentCard!});
+          showMessageFunc(`🌈 Color changed to ${state.currentCard!.color}!`);
+        }
+        break;
+    }
+  }, [showMessageFunc, drawCardsFunc]);
+
+  const endGame = useCallback((winnerPlayer: Player) => {
+    gameStateRef.current.gameEnded = true;
+    setGameEnded(true);
+    setWinner(winnerPlayer);
+  }, []);
+
+  const nextTurn = useCallback(() => {
+    const state = gameStateRef.current;
+    if (state.gameEnded || state.waitingForColorSelection) return;
+    
+    state.currentPlayer = (state.currentPlayer + state.gameDirection + state.players.length) % state.players.length;
+    setCurrentPlayer(state.currentPlayer);
+    setUpdateTrigger(prev => prev + 1);
+
+    if (state.players[state.currentPlayer].isAI) {
+      setTimeout(() => aiTurn(), 1500);
+    }
+  }, []);
+
+  const playCard = useCallback((playerIndex: number, card: Card) => {
+    const state = gameStateRef.current;
+    if (playerIndex !== state.currentPlayer || state.gameEnded || state.waitingForColorSelection) return;
+
+    const player = state.players[playerIndex];
+    if (!card.canPlayOn(state.currentCard!)) {
+      showMessageFunc('❌ Invalid move! Card does not match.');
+      return;
+    }
+
+    player.removeCard(card);
+    state.discardPile.push(card);
+    state.currentCard = {color: card.color, value: card.value, type: card.type};
+    setCurrentCard(state.currentCard);
+
+    addCardToTable(card);
+    handleSpecialCard(card);
+
+    if (player.hasWon()) {
+      endGame(player);
+      return;
+    }
+
+    if (player.hasUno()) {
+      showMessageFunc(`🎯 ${player.name} has UNO!`);
+    }
+
+    setUpdateTrigger(prev => prev + 1);
+    
+    if (card.value !== 'skip') {
+      nextTurn();
+    } else {
+      nextTurn();
+      setTimeout(() => nextTurn(), 100);
+    }
+  }, [showMessageFunc, addCardToTable, handleSpecialCard, endGame, nextTurn]);
+
+  const aiTurn = useCallback(() => {
+    const state = gameStateRef.current;
+    if (state.gameEnded) return;
+    
+    const player = state.players[state.currentPlayer];
+    const playableCards = player.getPlayableCards(state.currentCard!);
+
+    if (playableCards.length > 0) {
+      const cardToPlay = playableCards[Math.floor(Math.random() * playableCards.length)];
+      playCard(state.currentPlayer, cardToPlay);
+      
+      if (state.currentPlayer > 0) {
+        state.aiPiles[state.currentPlayer - 1].removeCard(sceneRef.current!);
+        state.aiPiles[state.currentPlayer - 1].updateCards();
+      }
+    } else {
+      drawCardsFunc(state.currentPlayer, 1);
+      showMessageFunc(`📥 ${player.name} draws a card.`);
+      
+      const drawnCard = player.hand[player.hand.length - 1];
+      if (drawnCard.canPlayOn(state.currentCard!)) {
+        setTimeout(() => {
+          playCard(state.currentPlayer, drawnCard);
+          
+          if (state.currentPlayer > 0) {
+            state.aiPiles[state.currentPlayer - 1].removeCard(sceneRef.current!);
+            state.aiPiles[state.currentPlayer - 1].updateCards();
+          }
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          nextTurn();
+        }, 1000);
+      }
+    }
+  }, [playCard, drawCardsFunc, showMessageFunc, nextTurn]);
+
+  const selectWildColor = useCallback((color: CardColor) => {
+    const state = gameStateRef.current;
+    state.currentCard!.color = color;
+    setCurrentCard({...state.currentCard!});
+    showMessageFunc(`🌈 Color changed to ${color}!`);
+    state.waitingForColorSelection = false;
+    setWaitingForColorSelection(false);
+    setShowColorPicker(false);
+    setUpdateTrigger(prev => prev + 1);
+  }, [showMessageFunc]);
+
+  const initializeGame = useCallback(() => {
     if (!sceneRef.current || !cardBackTextureRef.current) return;
 
     // Clear previous game
-    tableCards.forEach(({ mesh }) => {
+    gameStateRef.current.tableCards.forEach(({ mesh }) => {
       sceneRef.current?.remove(mesh);
     });
+    gameStateRef.current.tableCards = [];
     setTableCards([]);
 
-    aiPiles.forEach(pile => {
+    gameStateRef.current.aiPiles.forEach(pile => {
       pile.clear(sceneRef.current!);
     });
+    gameStateRef.current.aiPiles = [];
     setAiPiles([]);
 
     // Create deck
@@ -467,6 +769,7 @@ const UnoGame3D: React.FC = () => {
     }
 
     shuffleArray(newDrawPile);
+    gameStateRef.current.drawPile = newDrawPile;
     setDrawPile(newDrawPile);
 
     const newPlayers = [
@@ -475,6 +778,7 @@ const UnoGame3D: React.FC = () => {
       new Player('AI 2', true, {x: -10, z: 0}),
       new Player('AI 3', true, {x: 10, z: 0})
     ];
+    gameStateRef.current.players = newPlayers;
     setPlayers(newPlayers);
 
     const newAiPiles: AICardPile[] = [];
@@ -482,15 +786,51 @@ const UnoGame3D: React.FC = () => {
       const pile = new AICardPile(i, newPlayers[i].position, sceneRef.current);
       newAiPiles.push(pile);
     }
+    gameStateRef.current.aiPiles = newAiPiles;
     setAiPiles(newAiPiles);
 
     setDealingAnimation(true);
     setGameStarted(true);
-  };
+    dealCards();
+  }, [dealCards]);
+
+  const handleDrawPile = useCallback(() => {
+    const state = gameStateRef.current;
+    if (state.currentPlayer === 0 && !state.gameEnded && !state.waitingForColorSelection) {
+      drawCardsFunc(0, 1);
+      
+      const drawnCard = state.players[0].hand[state.players[0].hand.length - 1];
+      if (!drawnCard.canPlayOn(state.currentCard!)) {
+        setTimeout(() => {
+          nextTurn();
+        }, 1000);
+      }
+    }
+  }, [drawCardsFunc, nextTurn]);
+
+  const handlePlayAgain = useCallback(() => {
+    setWinner(null);
+    setGameStarted(false);
+    setGameEnded(false);
+    gameStateRef.current.gameEnded = false;
+  }, []);
 
   return (
-    <div style={{ margin: 0, padding: 0, overflow: 'hidden', width: '100vw', height: '100vh' }}>
-      <style jsx>{`
+    <div style={{ margin: 0, padding: 0, overflow: 'hidden' }}>
+      <style>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: 'Arial', sans-serif;
+          background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+          overflow: hidden;
+          color: white;
+        }
+
         #gameContainer {
           position: relative;
           width: 100vw;
@@ -900,14 +1240,14 @@ const UnoGame3D: React.FC = () => {
             </div>
           </div>
           
-          <div id="drawPile">
+          <div id="drawPile" onClick={handleDrawPile}>
             <h3>🎯 Draw Pile</h3>
             <div id="drawPileCount">{drawPile.length} cards</div>
           </div>
           
           <div id="playerHand">
             {currentPlayer === 0 && !gameEnded && !waitingForColorSelection && players[0]?.hand.map((card, index) => (
-              <div key={index} className={`card-button ${card.color}`}>
+              <div key={index} className={`card-button ${card.color}`} onClick={() => playCard(0, card)}>
                 <div className="uno-logo">UNO</div>
                 <div className="card-symbol">{getCardSymbol(card.value)}</div>
                 <div className="card-value">{card.value.toUpperCase()}</div>
@@ -929,7 +1269,7 @@ const UnoGame3D: React.FC = () => {
           <h3>Choose a Color</h3>
           <div className="color-options">
             {COLORS.map(color => (
-              <div key={color} className={`color-button ${color}`} onClick={() => setShowColorPicker(false)}>
+              <div key={color} className={`color-button ${color}`} onClick={() => selectWildColor(color)}>
                 {color.charAt(0).toUpperCase() + color.slice(1)}
               </div>
             ))}
@@ -946,10 +1286,7 @@ const UnoGame3D: React.FC = () => {
               </>
             )}
           </div>
-          <button id="playAgainButton" onClick={() => {
-            setWinner(null);
-            setGameStarted(false);
-          }}>
+          <button id="playAgainButton" onClick={handlePlayAgain}>
             🔄 Play Again
           </button>
         </div>
