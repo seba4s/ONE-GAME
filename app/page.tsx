@@ -12,6 +12,7 @@ import GameRoomMenu from "@/components/game-room-menu"
 import RoomSelectionScreen from "@/components/RoomSelectionScreen"
 import HalftoneWaves from "@/components/halftone-waves"
 import LoginScreen from "@/components/LoginScreen"
+import GamePlay from "@/components/GamePlay"
 
 interface UserData {
   username: string
@@ -23,7 +24,7 @@ interface UserData {
 
 export default function HomePage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'main' | 'room-selection' | 'game'>('main')
+  const [currentScreen, setCurrentScreen] = useState<'login' | 'main' | 'room-selection' | 'game' | 'gameplay'>('main')
   const [userData, setUserData] = useState<UserData | null>(null)
 
   const handleLogout = () => {
@@ -137,8 +138,18 @@ export default function HomePage() {
         <div className="fixed inset-0 z-50 animate-fade-in">
           <HalftoneWaves />
           <div className="absolute inset-0 z-[60] flex items-center justify-center w-full h-full p-4">
-            <GameRoomMenu onBack={() => setCurrentScreen('room-selection')} userData={userData} />
+            <GameRoomMenu 
+              onBack={() => setCurrentScreen('room-selection')} 
+              onStartGame={() => setCurrentScreen('gameplay')}
+              userData={userData} 
+            />
           </div>
+        </div>
+      )}
+
+      {currentScreen === 'gameplay' && (
+        <div className="fixed inset-0 z-50 animate-fade-in">
+          <GamePlay />
         </div>
       )}
 

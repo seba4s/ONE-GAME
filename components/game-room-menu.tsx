@@ -17,10 +17,11 @@ interface UserData {
 
 interface GameRoomMenuProps {
   onBack?: () => void
+  onStartGame?: () => void
   userData?: UserData | null
 }
 
-export default function GameRoomMenu({ onBack, userData }: GameRoomMenuProps) {
+export default function GameRoomMenu({ onBack, onStartGame, userData }: GameRoomMenuProps) {
   const [roomType, setRoomType] = useState<"public" | "private">("public")
   const [roomCode, setRoomCode] = useState("")
   // Generar código automáticamente al cargar
@@ -313,7 +314,10 @@ useEffect(() => {
             <Link2 className="w-5 h-5 mr-2" />
             INVITAR
           </Button>
-          <Button className="footer-button glass-button start-button bg-red-600 hover:bg-red-700">
+          <Button 
+            className="footer-button glass-button start-button bg-red-600 hover:bg-red-700"
+            onClick={onStartGame}
+          >
             <Play className="w-5 h-5 mr-2" />
             INICIAR
           </Button>
