@@ -32,9 +32,8 @@ export default function GameBoard({
   return (
     <>
       <div
-        className={`game-field perspective ${gameColor}`}
+        className={`game-field ${gameColor}`}
         style={{
-          background: "radial-gradient(circle at center, #ff8c00 0%, #ff4500 20%, #dc2626 40%, #8b0000 80%, #000000 100%)",
           width: "100vw",
           height: "100vh",
           display: "grid",
@@ -47,6 +46,7 @@ export default function GameBoard({
           position: "fixed",
           top: 0,
           left: 0,
+          backgroundColor: "#2a2a2a",
         }}
       >
         {/* PLAYER YOU - BOTTOM */}
@@ -402,8 +402,8 @@ export default function GameBoard({
         }
 
         /* PERSPECTIVE */
-        .game-field.perspective {
-          transform: rotateX(30deg);
+        .game-field {
+          /* Sin 3D transform - layout limpio */
         }
       `}</style>
     </>
