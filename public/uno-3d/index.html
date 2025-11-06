@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>3D UNO CARD GAME</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D UNO Card Game - Realistic Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #gameInfo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            max-width: 200px;
+        }
+
+        #playerHand {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+            max-width: 90%;
+            overflow-x: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-button {
+            width: 60px;
+            height: 90px;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-button:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-button.red { background: linear-gradient(135deg, #ff4444, #cc0000); }
+        .card-button.yellow { background: linear-gradient(135deg, #ffff44, #ffcc00); color: #333; }
+        .card-button.green { background: linear-gradient(135deg, #44ff44, #00cc00); color: #333; }
+        .card-button.blue { background: linear-gradient(135deg, #4444ff, #0000cc); }
+        .card-button.wild { 
+            background: linear-gradient(45deg, #ff4444 25%, #ffff44 25%, #ffff44 50%, #44ff44 50%, #44ff44 75%, #4444ff 75%);
+        }
+
+        .uno-logo {
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        #currentCard {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            border: 2px solid #ffd700;
+            width: 140px;
+        }
+
+        .current-card-large {
+            width: 100px;
+            height: 150px;
+            border: 3px solid white;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .current-card-large.red { background: linear-gradient(135deg, #ff4444, #cc0000); }
+        .current-card-large.yellow { background: linear-gradient(135deg, #ffff44, #ffcc00); color: #333; }
+        .current-card-large.green { background: linear-gradient(135deg, #44ff44, #00cc00); color: #333; }
+        .current-card-large.blue { background: linear-gradient(135deg, #4444ff, #0000cc); }
+        .current-card-large.wild { 
+            background: linear-gradient(45deg, #ff4444 25%, #ffff44 25%, #ffff44 50%, #44ff44 50%, #44ff44 75%, #4444ff 75%);
+        }
+
+        .current-card-large .uno-logo {
+            font-size: 10px;
+            top: 5px;
+        }
+
+        .current-card-large .card-symbol {
+            font-size: 28px;
+            margin: 8px 0;
+        }
+
+        .current-card-large .card-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .card-info {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        #drawPile {
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            width: 120px;
+            text-align: center;
+        }
+
+        #drawPile:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        #gameMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 20px;
+            display: none;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            border: 2px solid #ffd700;
+            max-width: 80%;
+        }
+
+        #startButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #startButton:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .player-info {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .current-turn {
+            background: rgba(255, 215, 0, 0.3);
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        #winnerText {
+            font-size: 42px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite alternate;
+            text-align: center;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
+            to { text-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
+        }
+
+        #playAgainButton {
+            padding: 12px 25px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #playAgainButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .card-value {
+            font-size: 16px;
+            margin-top: 3px;
+        }
+
+        .card-symbol {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+
+        /* Color Picker Styles */
+        #colorPicker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            border: 2px solid #ffd700;
+            z-index: 50;
+        }
+
+        #colorPicker h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-size: 22px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .color-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .color-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .color-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .color-button.red { 
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+        }
+        .color-button.yellow { 
+            background: linear-gradient(135deg, #ffff44, #ffcc00);
+            color: #333;
+        }
+        .color-button.green { 
+            background: linear-gradient(135deg, #44ff44, #00cc00);
+            color: #333;
+        }
+        .color-button.blue { 
+            background: linear-gradient(135deg, #4444ff, #0000cc);
+            color: white;
+        }
+
+        /* Card dealing message */
+        #dealingMessage {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 24px;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 20;
+            border: 2px solid #ffd700;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui">
+            <div id="gameInfo">
+                <h2>🎴 UNO 3D Game 🎴</h2>
+                <div id="playersInfo"></div>
+                <div id="turnInfo"></div>
+            </div>
+            
+            <div id="currentCard">
+                <h3>Current Card</h3>
+                <div id="currentCardDisplay"></div>
+            </div>
+            
+            <div id="drawPile">
+                <h3>🎯 Draw Pile</h3>
+                <div id="drawPileCount">108 cards</div>
+            </div>
+            
+            <div id="playerHand"></div>
+            
+            <div id="gameMessage"></div>
+            <div id="dealingMessage">Dealing Cards...</div>
+            
+            <button id="startButton">🚀 Start Game</button>
+        </div>
+
+        <div id="colorPicker">
+            <h3>Choose a Color</h3>
+            <div class="color-options">
+                <div class="color-button red" data-color="red">Red</div>
+                <div class="color-button yellow" data-color="yellow">Yellow</div>
+                <div class="color-button green" data-color="green">Green</div>
+                <div class="color-button blue" data-color="blue">Blue</div>
+            </div>
+        </div>
+
+        <div id="gameOverScreen">
+            <div id="winnerText"></div>
+            <button id="playAgainButton">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Game state
+        let scene, camera, renderer;
+        let gameStarted = false;
+        let currentPlayer = 0;
+        let gameDirection = 1;
+        let drawPile = [];
+        let discardPile = [];
+        let players = [];
+        let currentCard = null;
+        let selectedColor = null;
+        let gameEnded = false;
+        let tableCards = [];
+        let waitingForColorSelection = false;
+        let aiPiles = [];
+        let dealingAnimation = false;
+        let cardBackTexture = null;
+        let unoLogoTexture = null;
+
+        // UNO card types
+        const COLORS = ['red', 'yellow', 'green', 'blue'];
+        const NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        const ACTIONS = ['skip', 'reverse', 'draw2'];
+        const WILDS = ['wild', 'wild4'];
+
+        // Initialize Three.js
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
+            
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x1a1a2e);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Enhanced lighting for better card visibility
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(5, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.1;
+            directionalLight.shadow.camera.far = 50;
+            directionalLight.shadow.camera.left = -15;
+            directionalLight.shadow.camera.right = 15;
+            directionalLight.shadow.camera.top = 15;
+            directionalLight.shadow.camera.bottom = -15;
+            scene.add(directionalLight);
+
+            // Additional point light for better illumination
+            const pointLight = new THREE.PointLight(0xffd700, 0.8, 30);
+            pointLight.position.set(0, 10, 0);
+            scene.add(pointLight);
+
+            // Adjusted camera position for better table view
+            camera.position.set(0, 15, 12);
+            camera.lookAt(0, 0, 0);
+
+            // Add realistic table
+            const tableGeometry = new THREE.BoxGeometry(24, 1, 18);
+            const tableMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x8B4513,
+                map: createWoodTexture()
+            });
+            const table = new THREE.Mesh(tableGeometry, tableMaterial);
+            table.position.y = -2.5;
+            table.receiveShadow = true;
+            scene.add(table);
+
+            // Add table legs
+            for (let x = -10; x <= 10; x += 20) {
+                for (let z = -7; z <= 7; z += 14) {
+                    const legGeometry = new THREE.BoxGeometry(1, 4, 1);
+                    const legMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+                    const leg = new THREE.Mesh(legGeometry, legMaterial);
+                    leg.position.set(x, -4.5, z);
+                    leg.castShadow = true;
+                    scene.add(leg);
+                }
+            }
+
+            // Create UNO logo texture
+            createUnoLogoTexture();
+            
+            // Create card back texture
+            cardBackTexture = createCardBackTexture();
+
+            animate();
+        }
+
+        function createWoodTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Wood grain effect
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, 0, 512, 512);
+            
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 50; i++) {
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * 512, 0);
+                ctx.bezierCurveTo(
+                    Math.random() * 512, Math.random() * 256,
+                    Math.random() * 512, Math.random() * 256,
+                    Math.random() * 512, 512
+                );
+                ctx.stroke();
+            }
+            
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createUnoLogoTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            // Create UNO logo
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(128, 128, 100, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('UNO', 128, 128);
+            
+            unoLogoTexture = new THREE.CanvasTexture(canvas);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Card class with realistic design
+        class Card {
+            constructor(color, value, type = 'number') {
+                this.color = color;
+                this.value = value;
+                this.type = type;
+                this.mesh = null;
+            }
+
+            createMesh(isFaceUp = true) {
+                // Doubled the card size: 3.2 x 4.8 x 0.05
+                const geometry = new THREE.BoxGeometry(3.2, 4.8, 0.05);
+                let materials = [];
+
+                if (isFaceUp) {
+                    const frontTexture = createCardTexture(this.color, this.value);
+                    
+                    materials = [
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }), // right
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }), // left
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }), // top
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }), // bottom
+                        new THREE.MeshLambertMaterial({ map: frontTexture }), // front
+                        new THREE.MeshLambertMaterial({ map: cardBackTexture })  // back
+                    ];
+                } else {
+                    materials = [
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                        new THREE.MeshLambertMaterial({ color: 0xffffff }),
+                        new THREE.MeshLambertMaterial({ map: cardBackTexture }),
+                        new THREE.MeshLambertMaterial({ map: cardBackTexture })
+                    ];
+                }
+
+                this.mesh = new THREE.Mesh(geometry, materials);
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
+                this.mesh.userData = { card: this };
+                return this.mesh;
+            }
+
+            canPlayOn(otherCard) {
+                if (this.color === 'wild') return true;
+                if (this.color === otherCard.color) return true;
+                if (this.value === otherCard.value) return true;
+                return false;
+            }
+        }
+
+        function createCardTexture(color, value) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; // Doubled resolution for better quality
+            canvas.height = 768; // Doubled resolution for better quality
+            const ctx = canvas.getContext('2d');
+
+            // Background with gradient
+            if (color === 'wild') {
+                const gradient = ctx.createRadialGradient(256, 384, 100, 256, 384, 300);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.3, '#ff0000');
+                gradient.addColorStop(0.5, '#ffff00');
+                gradient.addColorStop(0.7, '#00ff00');
+                gradient.addColorStop(0.9, '#0000ff');
+                gradient.addColorStop(1, '#000000');
+                ctx.fillStyle = gradient;
+            } else {
+                const colors = {
+                    red: ['#ff6b6b', '#cc0000'],
+                    yellow: ['#ffd93d', '#ffcc00'],
+                    green: ['#6bcf7f', '#00cc00'],
+                    blue: ['#4d96ff', '#0066cc']
+                };
+                const gradient = ctx.createLinearGradient(0, 0, 512, 768);
+                gradient.addColorStop(0, colors[color][0]);
+                gradient.addColorStop(1, colors[color][1]);
+                ctx.fillStyle = gradient;
+            }
+            ctx.fillRect(0, 0, 512, 768);
+
+            // White circle in center - doubled size
+            ctx.beginPath();
+            ctx.arc(256, 384, 160, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            // Card value/symbol - doubled font size
+            ctx.fillStyle = color === 'wild' ? '#000' : (color === 'yellow' ? '#333' : '#fff');
+            ctx.font = 'bold 144px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            let displayValue = value;
+            if (value === 'skip') displayValue = '⊘';
+            else if (value === 'reverse') displayValue = '⟲';
+            else if (value === 'draw2') displayValue = '+2';
+            else if (value === 'wild') displayValue = '🌈';
+            else if (value === 'wild4') displayValue = '+4';
+            
+            ctx.fillText(displayValue, 256, 384);
+
+            // UNO logo at top and bottom - doubled size
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 56px Arial';
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 8;
+            ctx.fillText('UNO', 256, 80);
+            ctx.fillText('UNO', 256, 708);
+            ctx.shadowBlur = 0;
+
+            // Corner values - doubled size
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText(displayValue, 60, 60);
+            ctx.fillText(displayValue, 452, 708);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createCardBackTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 768;
+            const ctx = canvas.getContext('2d');
+
+            // Red background
+            const gradient = ctx.createRadialGradient(256, 384, 100, 256, 384, 300);
+            gradient.addColorStop(0, '#ff4444');
+            gradient.addColorStop(1, '#cc0000');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 768);
+
+            // UNO logo in center - doubled size
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 120px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowBlur = 12;
+            ctx.fillText('UNO', 256, 384);
+            ctx.shadowBlur = 0;
+
+            // Decorative border - doubled size
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 8;
+            ctx.strokeRect(20, 20, 472, 728);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Player class
+        class Player {
+            constructor(name, isAI = true, position) {
+                this.name = name;
+                this.isAI = isAI;
+                this.hand = [];
+                this.position = position; // {x, z} position on the table
+            }
+
+            addCard(card) {
+                this.hand.push(card);
+            }
+
+            removeCard(card) {
+                const index = this.hand.indexOf(card);
+                if (index > -1) {
+                    this.hand.splice(index, 1);
+                }
+            }
+
+            getPlayableCards(topCard) {
+                return this.hand.filter(card => card.canPlayOn(topCard));
+            }
+
+            hasUno() {
+                return this.hand.length === 1;
+            }
+
+            hasWon() {
+                return this.hand.length === 0;
+            }
+        }
+
+        // AI Card Pile class
+        class AICardPile {
+            constructor(playerIndex, position) {
+                this.playerIndex = playerIndex;
+                this.position = position;
+                this.cards = [];
+                this.base = null;
+                this.createBase();
+            }
+
+            createBase() {
+                // Create cylindrical base
+                const geometry = new THREE.CylinderGeometry(2, 2, 0.5, 32);
+                const material = new THREE.MeshLambertMaterial({ color: 0x333333 });
+                this.base = new THREE.Mesh(geometry, material);
+                this.base.position.set(this.position.x, -2.25, this.position.z);
+                this.base.receiveShadow = true;
+                scene.add(this.base);
+            }
+
+            addCard(card) {
+                const mesh = card.createMesh(false); // Face down
+                mesh.position.set(
+                    this.position.x + (Math.random() - 0.5) * 0.5,
+                    -2 + this.cards.length * 0.1,
+                    this.position.z + (Math.random() - 0.5) * 0.5
+                );
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.rotation.z = (Math.random() - 0.5) * 0.2;
+                mesh.rotation.y = (Math.random() - 0.5) * 0.2;
+                scene.add(mesh);
+                
+                this.cards.push({
+                    card: card,
+                    mesh: mesh
+                });
+            }
+
+            removeCard() {
+                if (this.cards.length === 0) return null;
+                
+                const cardObj = this.cards.pop();
+                scene.remove(cardObj.mesh);
+                return cardObj.card;
+            }
+
+            updateCards() {
+                // Update positions of all cards in the pile
+                this.cards.forEach((cardObj, index) => {
+                    cardObj.mesh.position.y = -2 + index * 0.1;
+                });
+            }
+
+            clear() {
+                this.cards.forEach(cardObj => {
+                    scene.remove(cardObj.mesh);
+                });
+                this.cards = [];
+            }
+
+            getCardCount() {
+                return this.cards.length;
+            }
+        }
+
+        // Initialize game
+        function initializeGame() {
+            // Clear previous game
+            tableCards.forEach(card => {
+                if (card.mesh && scene) {
+                    scene.remove(card.mesh);
+                }
+            });
+            tableCards = [];
+
+            // Clear AI piles
+            aiPiles.forEach(pile => {
+                pile.clear();
+                scene.remove(pile.base);
+            });
+            aiPiles = [];
+
+            // Create deck
+            drawPile = [];
+            
+            // Add number cards
+            COLORS.forEach(color => {
+                NUMBERS.forEach(number => {
+                    drawPile.push(new Card(color, number, 'number'));
+                    if (number !== '0') {
+                        drawPile.push(new Card(color, number, 'number'));
+                    }
+                });
+            });
+
+            // Add action cards
+            COLORS.forEach(color => {
+                ACTIONS.forEach(action => {
+                    drawPile.push(new Card(color, action, 'action'));
+                    drawPile.push(new Card(color, action, 'action'));
+                });
+            });
+
+            // Add wild cards
+            for (let i = 0; i < 4; i++) {
+                drawPile.push(new Card('wild', 'wild', 'wild'));
+                drawPile.push(new Card('wild', 'wild4', 'wild'));
+            }
+
+            // Shuffle deck
+            shuffleArray(drawPile);
+
+            // Create players with positions
+            players = [
+                new Player('You', false, {x: 0, z: 8}),
+                new Player('AI 1', true, {x: 0, z: -8}),
+                new Player('AI 2', true, {x: -10, z: 0}),
+                new Player('AI 3', true, {x: 10, z: 0})
+            ];
+
+            // Create AI card piles
+            for (let i = 1; i < players.length; i++) {
+                const pile = new AICardPile(i, players[i].position);
+                aiPiles.push(pile);
+            }
+
+            // Start dealing animation
+            dealingAnimation = true;
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('dealingMessage').style.display = 'block';
+            dealCards();
+        }
+
+        function dealCards() {
+            const totalCards = players.length * 7;
+            let cardIndex = 0;
+            
+            function dealNextCard() {
+                if (cardIndex >= totalCards) {
+                    // All cards dealt
+                    dealingAnimation = false;
+                    document.getElementById('dealingMessage').style.display = 'none';
+                    
+                    // Start discard pile
+                    do {
+                        currentCard = drawPile.pop();
+                    } while (currentCard.type === 'wild');
+                    
+                    discardPile.push(currentCard);
+                    addCardToTable(currentCard, true);
+                    
+                    // Set first player
+                    currentPlayer = 0;
+                    gameDirection = 1;
+                    gameEnded = false;
+                    waitingForColorSelection = false;
+                    
+                    updateUI();
+                    nextTurn();
+                    return;
+                }
+                
+                const playerIndex = cardIndex % players.length;
+                const card = drawPile.pop();
+                players[playerIndex].addCard(card);
+                
+                // Add card to AI pile or animate to player
+                if (playerIndex > 0) {
+                    // AI player - add to pile
+                    aiPiles[playerIndex - 1].addCard(card);
+                } else {
+                    // Human player - animate card to hand
+                    animateCardToPlayer(card);
+                }
+                
+                cardIndex++;
+                setTimeout(dealNextCard, 200); // Delay between cards
+            }
+            
+            dealNextCard();
+        }
+
+        function animateCardToPlayer(card) {
+            // Create a temporary card mesh for animation
+            const mesh = card.createMesh(false);
+            mesh.position.set(0, 5, 0);
+            scene.add(mesh);
+            
+            // Animate to player position
+            const startPos = {x: 0, y: 5, z: 0};
+            const endPos = {x: 0, y: 1, z: 8};
+            const duration = 500;
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                mesh.position.x = startPos.x + (endPos.x - startPos.x) * easeProgress;
+                mesh.position.y = startPos.y + (endPos.y - startPos.y) * easeProgress;
+                mesh.position.z = startPos.z + (endPos.z - startPos.z) * easeProgress;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Animation complete, remove the mesh
+                    scene.remove(mesh);
+                }
+            }
+            
+            animate();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function addCardToTable(card, isCurrentCard = false) {
+            const mesh = card.createMesh(true);
+            
+            // Stacked display - all cards stack at center with vertical offset
+            mesh.position.set(0, -1.5 + (tableCards.length * 0.1), 0);
+            mesh.rotation.x = -Math.PI / 2;
+            
+            scene.add(mesh);
+            
+            tableCards.push({
+                card: card,
+                mesh: mesh
+            });
+        }
+
+        function updateUI() {
+            // Update players info
+            const playersInfo = document.getElementById('playersInfo');
+            playersInfo.innerHTML = '';
+            players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = `player-info ${index === currentPlayer ? 'current-turn' : ''}`;
+                playerDiv.innerHTML = `
+                    <strong>${player.name}</strong><br>
+                    Cards: ${player.hand.length}
+                    ${player.hasUno() ? ' - 🎯 UNO!' : ''}
+                `;
+                playersInfo.appendChild(playerDiv);
+            });
+
+            // Update turn info
+            document.getElementById('turnInfo').innerHTML = `
+                <strong>Current Turn: ${players[currentPlayer].name}</strong><br>
+                Direction: ${gameDirection === 1 ? '↻ Clockwise' : '↺ Counter-clockwise'}
+            `;
+
+            // Update current card display with enhanced design
+            updateCurrentCardDisplay();
+
+            // Update draw pile count
+            document.getElementById('drawPileCount').textContent = `${drawPile.length} cards`;
+
+            // Update player hand
+            updatePlayerHand();
+        }
+
+        function updateCurrentCardDisplay() {
+            const currentCardDisplay = document.getElementById('currentCardDisplay');
+            if (!currentCard) return;
+
+            const colorClass = currentCard.color;
+            const symbol = getCardSymbol(currentCard.value);
+            const value = currentCard.value.toUpperCase();
+            const colorName = currentCard.color.charAt(0).toUpperCase() + currentCard.color.slice(1);
+
+            currentCardDisplay.innerHTML = `
+                <div class="current-card-large ${colorClass}">
+                    <div class="uno-logo">UNO</div>
+                    <div class="card-symbol">${symbol}</div>
+                    <div class="card-value">${value}</div>
+                </div>
+                <div class="card-info">
+                    Color: ${colorName}<br>
+                    Card: ${value}
+                </div>
+            `;
+        }
+
+        function updatePlayerHand() {
+            const playerHand = document.getElementById('playerHand');
+            playerHand.innerHTML = '';
+            
+            if (currentPlayer === 0 && !gameEnded && !waitingForColorSelection) {
+                players[0].hand.forEach((card, index) => {
+                    const cardButton = document.createElement('div');
+                    cardButton.className = `card-button ${card.color}`;
+                    cardButton.innerHTML = `
+                        <div class="uno-logo">UNO</div>
+                        <div class="card-symbol">${getCardSymbol(card.value)}</div>
+                        <div class="card-value">${card.value.toUpperCase()}</div>
+                    `;
+                    cardButton.onclick = () => playCard(0, card);
+                    playerHand.appendChild(cardButton);
+                });
+            }
+        }
+
+        function getCardSymbol(value) {
+            if (value === 'skip') return '⊘';
+            if (value === 'reverse') return '⟲';
+            if (value === 'draw2') return '+2';
+            if (value === 'wild') return '🌈';
+            if (value === 'wild4') return '+4';
+            return value;
+        }
+
+        function playCard(playerIndex, card) {
+            if (playerIndex !== currentPlayer || gameEnded || waitingForColorSelection) return;
+
+            const player = players[playerIndex];
+            if (!card.canPlayOn(currentCard)) {
+                showMessage('❌ Invalid move! Card does not match.');
+                return;
+            }
+
+            // Remove card from player's hand
+            player.removeCard(card);
+            discardPile.push(card);
+            currentCard = card;
+
+            // Add card to table with animation
+            addCardToTable(card);
+
+            // Handle special cards
+            handleSpecialCard(card);
+
+            // Check for win
+            if (player.hasWon()) {
+                endGame(player);
+                return;
+            }
+
+            // Check for UNO
+            if (player.hasUno()) {
+                showMessage(`🎯 ${player.name} has UNO!`);
+            }
+
+            updateUI();
+            
+            // Next turn
+            if (card.value !== 'skip') {
+                nextTurn();
+            } else {
+                nextTurn();
+                nextTurn();
+            }
+        }
+
+        function handleSpecialCard(card) {
+            switch (card.value) {
+                case 'reverse':
+                    gameDirection *= -1;
+                    showMessage('🔄 Direction reversed!');
+                    break;
+                case 'skip':
+                    showMessage('⏭️ Next player skipped!');
+                    break;
+                case 'draw2':
+                    const nextPlayer = (currentPlayer + gameDirection + players.length) % players.length;
+                    drawCards(nextPlayer, 2);
+                    showMessage(`📥 ${players[nextPlayer].name} draws 2 cards!`);
+                    break;
+                case 'wild4':
+                    const targetPlayer = (currentPlayer + gameDirection + players.length) % players.length;
+                    drawCards(targetPlayer, 4);
+                    showMessage(`📥 ${players[targetPlayer].name} draws 4 cards!`);
+                    // Fall through to wild
+                case 'wild':
+                    if (currentPlayer === 0) {
+                        showColorPicker();
+                    } else {
+                        // AI selects random color
+                        currentCard.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                        showMessage(`🌈 Color changed to ${currentCard.color}!`);
+                    }
+                    break;
+            }
+        }
+
+        function showColorPicker() {
+            waitingForColorSelection = true;
+            document.getElementById('colorPicker').style.display = 'flex';
+            updatePlayerHand(); // Disable player hand while selecting color
+        }
+
+        function hideColorPicker() {
+            waitingForColorSelection = false;
+            document.getElementById('colorPicker').style.display = 'none';
+            updatePlayerHand(); // Re-enable player hand after color selection
+        }
+
+        function selectWildColor(color) {
+            currentCard.color = color;
+            showMessage(`🌈 Color changed to ${color}!`);
+            hideColorPicker();
+            updateUI();
+        }
+
+        function drawCards(playerIndex, count) {
+            const player = players[playerIndex];
+            for (let i = 0; i < count; i++) {
+                if (drawPile.length === 0) {
+                    reshuffleDeck();
+                }
+                const card = drawPile.pop();
+                player.addCard(card);
+                
+                // Add to AI pile if it's an AI player
+                if (playerIndex > 0) {
+                    aiPiles[playerIndex - 1].addCard(card);
+                }
+            }
+        }
+
+        function reshuffleDeck() {
+            if (discardPile.length <= 1) return;
+            
+            const topCard = discardPile.pop();
+            drawPile = [...discardPile];
+            discardPile = [topCard];
+            shuffleArray(drawPile);
+            showMessage('🔄 Deck reshuffled!');
+        }
+
+        function nextTurn() {
+            if (gameEnded || waitingForColorSelection) return;
+            
+            currentPlayer = (currentPlayer + gameDirection + players.length) % players.length;
+            updateUI();
+
+            // AI turn
+            if (players[currentPlayer].isAI) {
+                setTimeout(() => aiTurn(), 1500);
+            }
+        }
+
+        function aiTurn() {
+            if (gameEnded) return;
+            
+            const player = players[currentPlayer];
+            const playableCards = player.getPlayableCards(currentCard);
+
+            if (playableCards.length > 0) {
+                // AI plays a random playable card
+                const cardToPlay = playableCards[Math.floor(Math.random() * playableCards.length)];
+                playCard(currentPlayer, cardToPlay);
+                
+                // Remove card from AI pile
+                if (currentPlayer > 0) {
+                    aiPiles[currentPlayer - 1].removeCard();
+                    aiPiles[currentPlayer - 1].updateCards();
+                }
+            } else {
+                // AI draws a card
+                drawCards(currentPlayer, 1);
+                showMessage(`📥 ${player.name} draws a card.`);
+                updateUI();
+                
+                // Check if the drawn card can be played
+                const drawnCard = player.hand[player.hand.length - 1];
+                if (drawnCard.canPlayOn(currentCard)) {
+                    setTimeout(() => {
+                        playCard(currentPlayer, drawnCard);
+                        
+                        // Remove card from AI pile
+                        if (currentPlayer > 0) {
+                            aiPiles[currentPlayer - 1].removeCard();
+                            aiPiles[currentPlayer - 1].updateCards();
+                        }
+                    }, 1000);
+                } else {
+                    setTimeout(() => {
+                        nextTurn();
+                    }, 1000);
+                }
+            }
+        }
+
+        function showMessage(message) {
+            const messageDiv = document.getElementById('gameMessage');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 2000);
+        }
+
+        function endGame(winner) {
+            gameEnded = true;
+            const gameOverScreen = document.getElementById('gameOverScreen');
+            const winnerText = document.getElementById('winnerText');
+            
+            winnerText.innerHTML = `
+                🎉 Congratulations! 🎉<br>
+                ${winner.name} Won the Game!<br>
+                <span style="font-size: 24px;">🏆 UNO Champion! 🏆</span>
+            `;
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Event listeners
+        document.getElementById('startButton').addEventListener('click', () => {
+            document.getElementById('startButton').style.display = 'none';
+            gameStarted = true;
+            initializeGame();
+        });
+
+        document.getElementById('drawPile').addEventListener('click', () => {
+            if (currentPlayer === 0 && !gameEnded && !waitingForColorSelection) {
+                drawCards(0, 1);
+                updateUI();
+                
+                // Check if drawn card can be played
+                const drawnCard = players[0].hand[players[0].hand.length - 1];
+                if (!drawnCard.canPlayOn(currentCard)) {
+                    setTimeout(() => {
+                        nextTurn();
+                    }, 1000);
+                }
+            }
+        });
+
+        document.getElementById('playAgainButton').addEventListener('click', () => {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('startButton').style.display = 'block';
+        });
+
+        // Color picker event listeners
+        document.querySelectorAll('.color-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const color = button.getAttribute('data-color');
+                selectWildColor(color);
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize the game
+        initThreeJS();
+    </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
