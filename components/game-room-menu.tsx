@@ -131,10 +131,6 @@ useEffect(() => {
             <Image src="/uno-logo.png" alt="UNO Logo" width={180} height={80} className="uno-logo" />
 
           </div>
-
-          <Button variant="outline" size="icon" className="sound-button glass-button bg-transparent text-white">
-            <Volume2 className="w-5 h-5 text-white" />
-          </Button>
         </div>
 
         <div className="main-layout">
@@ -568,22 +564,6 @@ useEffect(() => {
         .uno-logo {
           object-fit: contain;
           filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-        }
-
-        .sound-button {
-          width: 3rem;
-          height: 3rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0.25rem;
-          border-radius: 12px;
-          background: rgba(255,255,255,0.03);
-        }
-
-        .sound-button :global(svg) {
-          width: 1.1rem;
-          height: 1.1rem;
         }
 
         /* Main Layout */
