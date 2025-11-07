@@ -359,6 +359,29 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
   const [winner, setWinner] = useState<Player | null>(null);
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
+  const turnIndicatorStyles: Array<React.CSSProperties> = [
+    {
+      top: '72%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    },
+    {
+      top: '18%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    },
+    {
+      top: '50%',
+      left: '24%',
+      transform: 'translate(-50%, -50%)',
+    },
+    {
+      top: '50%',
+      left: '76%',
+      transform: 'translate(-50%, -50%)',
+    },
+  ];
+
   const handleBack = useCallback(() => {
     if (onBack) {
       onBack();
@@ -876,6 +899,38 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
           z-index: 10;
         }
 
+        #turnIndicators {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 15;
+        }
+
+        .turn-label {
+          position: absolute;
+          padding: 0.65rem 1.35rem;
+          border-radius: 18px;
+          border: 1px solid rgba(255, 215, 0, 0.35);
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.45), hsl(45 50% 6% / 0) 33%),
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.45), hsl(0 50% 6% / 0) 33%),
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.35));
+          color: #ffd700;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+          opacity: 0.35;
+          transition: opacity 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+        }
+
+        .turn-label.active {
+          opacity: 1;
+          border: 2px solid rgba(255, 215, 0, 0.9);
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.55);
+        }
+
         #backButtonContainer {
           position: absolute;
           top: 20px;
@@ -884,10 +939,24 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
           z-index: 20;
         }
 
-        #gameInfo {
+        #leftColumn {
           position: absolute;
           top: 20px;
           left: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          z-index: 20;
+          width: 220px;
+          pointer-events: none;
+        }
+
+        #leftColumn > * {
+          pointer-events: auto;
+        }
+
+        #gameInfo {
+          position: relative;
           background: linear-gradient(235deg, hsl(45 50% 6% / 0.25), hsl(45 50% 6% / 0) 33%), 
                       linear-gradient(45deg, hsl(0 50% 6% / 0.25), hsl(0 50% 6% / 0) 33%), 
                       linear-gradient(hsl(220deg 25% 4.8% / 0.2));
@@ -1030,30 +1099,25 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
         }
 
         #drawPile {
-          position: absolute;
-          top: 50%;
-          left: 20%;
-          transform: translate(-50%, -50%);
+          position: relative;
           background: linear-gradient(235deg, hsl(45 50% 6% / 0.25), hsl(45 50% 6% / 0) 33%), 
                       linear-gradient(45deg, hsl(0 50% 6% / 0.25), hsl(0 50% 6% / 0) 33%), 
                       linear-gradient(hsl(220deg 25% 4.8% / 0.2));
-          padding: 1.25rem;
+          padding: 1.15rem 1.25rem;
           border-radius: 22px;
           border: 1px solid hsl(0, 12%, 20%);
           cursor: pointer;
           pointer-events: auto;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           backdrop-filter: blur(12px);
-          width: 130px;
+          width: 100%;
           text-align: center;
           box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px;
         }
 
         #drawPile:hover {
-          background: linear-gradient(235deg, hsl(45 50% 8% / 0.35), hsl(45 50% 8% / 0) 33%), 
-                      linear-gradient(45deg, hsl(0 50% 8% / 0.35), hsl(0 50% 8% / 0) 33%), 
-                      linear-gradient(hsl(220deg 25% 6.8% / 0.3));
-          transform: translate(-50%, -50%) scale(1.05);
+          transform: translateY(-6px);
+          box-shadow: hsl(0 50% 8%) 0px 12px 20px -10px, hsl(0 50% 12%) 0px 22px 40px -16px;
         }
 
         #gameMessage {
@@ -1305,6 +1369,26 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
       <div id="gameContainer">
         <canvas ref={canvasRef} id="gameCanvas" />
         <div id="ui">
+          <div id="turnIndicators">
+            {players.map((player, index) => {
+              const position = turnIndicatorStyles[index] ?? {
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              };
+
+              return (
+                <div
+                  key={player.name}
+                  className={`turn-label ${index === currentPlayer ? 'active' : ''}`}
+                  style={position}
+                >
+                  {player.name}
+                </div>
+              );
+            })}
+          </div>
+
           <div id="backButtonContainer">
             <Button
               type="button"
@@ -1315,24 +1399,31 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
             </Button>
           </div>
 
-          <div id="gameInfo">
-            <h2>🎴 UNO 3D Game 🎴</h2>
-            <div id="playersInfo">
-              {players.map((player, index) => (
-                <div key={index} className={`player-info ${index === currentPlayer ? 'current-turn' : ''}`}>
-                  <strong>{player.name}</strong><br />
-                  Cards: {player.hand.length}
-                  {player.hasUno() ? ' - 🎯 UNO!' : ''}
-                </div>
-              ))}
+          <div id="leftColumn">
+            <div id="gameInfo">
+              <h2>🎴 UNO 3D Game 🎴</h2>
+              <div id="playersInfo">
+                {players.map((player, index) => (
+                  <div key={index} className={`player-info ${index === currentPlayer ? 'current-turn' : ''}`}>
+                    <strong>{player.name}</strong><br />
+                    Cards: {player.hand.length}
+                    {player.hasUno() ? ' - 🎯 UNO!' : ''}
+                  </div>
+                ))}
+              </div>
+              <div id="turnInfo">
+                {players.length > 0 && (
+                  <>
+                    <strong>Current Turn: {players[currentPlayer]?.name}</strong><br />
+                    Direction: {gameDirection === 1 ? '↻ Clockwise' : '↺ Counter-clockwise'}
+                  </>
+                )}
+              </div>
             </div>
-            <div id="turnInfo">
-              {players.length > 0 && (
-                <>
-                  <strong>Current Turn: {players[currentPlayer]?.name}</strong><br />
-                  Direction: {gameDirection === 1 ? '↻ Clockwise' : '↺ Counter-clockwise'}
-                </>
-              )}
+            
+            <div id="drawPile" onClick={handleDrawPile}>
+              <h3>🎯 Draw Pile</h3>
+              <div id="drawPileCount">{drawPile.length} cards</div>
             </div>
           </div>
           
@@ -1353,11 +1444,6 @@ const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
                 </>
               )}
             </div>
-          </div>
-          
-          <div id="drawPile" onClick={handleDrawPile}>
-            <h3>🎯 Draw Pile</h3>
-            <div id="drawPileCount">{drawPile.length} cards</div>
           </div>
           
           <div id="playerHand">
