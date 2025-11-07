@@ -149,7 +149,7 @@ export default function HomePage() {
 
       {currentScreen === 'gameplay' && (
         <div className="fixed inset-0 z-50 animate-fade-in">
-          <GamePlay />
+          <GamePlay onBack={() => setCurrentScreen('game')} />
         </div>
       )}
 

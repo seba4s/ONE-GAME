@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import { Button } from '@/components/ui/button';
+import GalaxySpiral from './GalaxySpiral';
+import ParticleCanvas from './ParticleCanvas';
+import UnoCardsBackground from './UnoCardsBackground';
 
 // Types
 type CardColor = 'red' | 'yellow' | 'green' | 'blue' | 'wild';
@@ -327,7 +331,11 @@ function getCardSymbol(value: string): string {
 }
 
 // Main Component
-const UnoGame3D: React.FC = () => {
+interface UnoGame3DProps {
+  onBack?: () => void;
+}
+
+const UnoGame3D: React.FC<UnoGame3DProps> = ({ onBack }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -351,6 +359,14 @@ const UnoGame3D: React.FC = () => {
   const [winner, setWinner] = useState<Player | null>(null);
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
+  const handleBack = useCallback(() => {
+    if (onBack) {
+      onBack();
+    } else if (typeof window !== 'undefined') {
+      window.history.back();
+    }
+  }, [onBack]);
+
   // Refs for mutable game state
   const gameStateRef = useRef({
     currentPlayer: 0,
@@ -373,9 +389,9 @@ const UnoGame3D: React.FC = () => {
     scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
     
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x1a1a2e);
+    renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -816,7 +832,7 @@ const UnoGame3D: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ margin: 0, padding: 0, overflow: 'hidden' }}>
+    <div className="background-wrapper">
       <style>{`
         * {
           margin: 0;
@@ -826,7 +842,15 @@ const UnoGame3D: React.FC = () => {
 
         body {
           font-family: 'Source Sans Pro', sans-serif;
-          background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+          background: radial-gradient(circle at center, #ff8c00 0%, #ff4500 20%, #dc2626 40%, #8b0000 80%, #000000 100%);
+          overflow: hidden;
+          color: white;
+        }
+
+        .background-wrapper {
+          position: relative;
+          width: 100vw;
+          height: 100vh;
           overflow: hidden;
           color: white;
         }
@@ -835,6 +859,7 @@ const UnoGame3D: React.FC = () => {
           position: relative;
           width: 100vw;
           height: 100vh;
+          z-index: 10;
         }
 
         #gameCanvas {
@@ -849,6 +874,14 @@ const UnoGame3D: React.FC = () => {
           height: 100%;
           pointer-events: none;
           z-index: 10;
+        }
+
+        #backButtonContainer {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          pointer-events: auto;
+          z-index: 20;
         }
 
         #gameInfo {
@@ -1264,9 +1297,24 @@ const UnoGame3D: React.FC = () => {
         }
       `}</style>
 
+    <div className="spiral-background" />
+    <GalaxySpiral />
+    <ParticleCanvas />
+    <UnoCardsBackground />
+
       <div id="gameContainer">
         <canvas ref={canvasRef} id="gameCanvas" />
         <div id="ui">
+          <div id="backButtonContainer">
+            <Button
+              type="button"
+              className="glass-button glass-button-secondary"
+              onClick={handleBack}
+            >
+              ⬅ VOLVER
+            </Button>
+          </div>
+
           <div id="gameInfo">
             <h2>🎴 UNO 3D Game 🎴</h2>
             <div id="playersInfo">
