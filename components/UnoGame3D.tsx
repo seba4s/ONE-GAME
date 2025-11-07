@@ -825,7 +825,7 @@ const UnoGame3D: React.FC = () => {
         }
 
         body {
-          font-family: 'Arial', sans-serif;
+          font-family: 'Source Sans Pro', sans-serif;
           background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
           overflow: hidden;
           color: white;
@@ -855,12 +855,16 @@ const UnoGame3D: React.FC = () => {
           position: absolute;
           top: 20px;
           left: 20px;
-          background: rgba(0, 0, 0, 0.7);
-          padding: 15px;
-          border-radius: 10px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.25), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.25), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.2));
+          padding: 1.25rem;
+          border-radius: 22px;
+          border: 1px solid hsl(0, 12%, 20%);
           pointer-events: auto;
-          backdrop-filter: blur(10px);
-          max-width: 200px;
+          backdrop-filter: blur(12px);
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px;
+          max-width: 220px;
         }
 
         #playerHand {
@@ -868,37 +872,43 @@ const UnoGame3D: React.FC = () => {
           bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.7);
-          padding: 15px;
-          border-radius: 10px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.25), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.25), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.2));
+          padding: 1.25rem;
+          border-radius: 22px;
+          border: 1px solid hsl(0, 12%, 20%);
           pointer-events: auto;
           display: flex;
           gap: 10px;
           max-width: 90%;
           overflow-x: auto;
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(12px);
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px;
         }
 
         .card-button {
           width: 60px;
           height: 90px;
           border: 2px solid white;
-          border-radius: 8px;
+          border-radius: 12px;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           font-weight: bold;
           font-size: 14px;
+          font-family: 'Source Sans Pro', sans-serif;
           position: relative;
           overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .card-button:hover {
           transform: translateY(-10px);
-          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
         }
 
         .card-button.red { background: linear-gradient(135deg, #ff4444, #cc0000); }
@@ -925,13 +935,16 @@ const UnoGame3D: React.FC = () => {
           top: 50%;
           right: 20px;
           transform: translateY(-50%);
-          background: rgba(0, 0, 0, 0.8);
-          padding: 15px;
-          border-radius: 10px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.25), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.25), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.2));
+          padding: 1.25rem;
+          border-radius: 22px;
           pointer-events: auto;
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(12px);
           border: 2px solid #ffd700;
-          width: 140px;
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px;
+          width: 150px;
         }
 
         .current-card-large {
@@ -947,6 +960,7 @@ const UnoGame3D: React.FC = () => {
           position: relative;
           overflow: hidden;
           box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+          font-family: 'Source Sans Pro', sans-serif;
         }
 
         .current-card-large.red { background: linear-gradient(135deg, #ff4444, #cc0000); }
@@ -975,9 +989,11 @@ const UnoGame3D: React.FC = () => {
         .card-info {
           text-align: center;
           font-size: 14px;
-          font-weight: bold;
+          font-weight: 600;
           color: #ffd700;
+          font-family: 'Source Sans Pro', sans-serif;
           text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+          letter-spacing: 0.05em;
         }
 
         #drawPile {
@@ -985,19 +1001,25 @@ const UnoGame3D: React.FC = () => {
           top: 50%;
           left: 20%;
           transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.8);
-          padding: 15px;
-          border-radius: 10px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.25), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.25), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.2));
+          padding: 1.25rem;
+          border-radius: 22px;
+          border: 1px solid hsl(0, 12%, 20%);
           cursor: pointer;
           pointer-events: auto;
-          transition: all 0.3s ease;
-          backdrop-filter: blur(10px);
-          width: 120px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          backdrop-filter: blur(12px);
+          width: 130px;
           text-align: center;
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px;
         }
 
         #drawPile:hover {
-          background: rgba(0, 0, 0, 0.9);
+          background: linear-gradient(235deg, hsl(45 50% 8% / 0.35), hsl(45 50% 8% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 8% / 0.35), hsl(0 50% 8% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 6.8% / 0.3));
           transform: translate(-50%, -50%) scale(1.05);
         }
 
@@ -1006,15 +1028,21 @@ const UnoGame3D: React.FC = () => {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.9);
-          padding: 20px;
-          border-radius: 15px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.95), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.95), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.9));
+          padding: 1.75rem 2rem;
+          border-radius: 22px;
+          border: 2px solid #ffd700;
           text-align: center;
           font-size: 20px;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 600;
+          letter-spacing: 0.05em;
           display: ${gameMessage ? 'block' : 'none'};
           pointer-events: auto;
-          backdrop-filter: blur(10px);
-          border: 2px solid #ffd700;
+          backdrop-filter: blur(12px);
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px, 0 0 20px rgba(255, 215, 0, 0.3);
           max-width: 80%;
         }
 
@@ -1023,36 +1051,46 @@ const UnoGame3D: React.FC = () => {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          background: linear-gradient(135deg, #4CAF50, #45a049);
+          background: linear-gradient(135deg in oklch, hsl(0 80% 50% / 0.95), hsl(0 85% 55% / 0.95) 50%, hsl(0 75% 48% / 0.95));
           color: white;
-          border: none;
-          padding: 15px 30px;
-          font-size: 20px;
-          border-radius: 10px;
+          border: 2px solid hsl(0 70% 40%);
+          padding: 1.5rem 2.5rem;
+          font-size: 1.25rem;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          border-radius: 22px;
           cursor: pointer;
           pointer-events: auto;
-          transition: all 0.3s ease;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 8px 28px rgba(220, 38, 38, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         #startButton:hover {
+          background: linear-gradient(135deg in oklch, hsl(0 85% 55% / 1), hsl(0 90% 60% / 1) 50%, hsl(0 80% 52% / 1));
           transform: translate(-50%, -50%) scale(1.05);
-          box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+          box-shadow: 0 12px 36px rgba(220, 38, 38, 0.7), 0 6px 16px rgba(0, 0, 0, 0.5);
+          border-color: hsl(0 80% 45%);
         }
 
         .player-info {
           margin: 8px 0;
-          padding: 8px;
+          padding: 10px;
           background: rgba(255, 255, 255, 0.1);
-          border-radius: 5px;
-          transition: all 0.3s ease;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           font-size: 14px;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 600;
+          letter-spacing: 0.03em;
         }
 
         .current-turn {
           background: rgba(255, 215, 0, 0.3);
           border: 2px solid #ffd700;
-          box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+          box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
         }
 
         #gameOverScreen {
@@ -1061,48 +1099,61 @@ const UnoGame3D: React.FC = () => {
           left: 0;
           width: 100%;
           height: 100%;
-          background: rgba(0, 0, 0, 0.9);
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.95), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.95), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.95));
           display: ${winner ? 'flex' : 'none'};
           flex-direction: column;
           justify-content: center;
           align-items: center;
           z-index: 100;
-          backdrop-filter: blur(5px);
+          backdrop-filter: blur(10px);
         }
 
         #winnerText {
-          font-size: 42px;
+          font-size: 2.5rem;
           color: #ffd700;
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-          margin-bottom: 20px;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(255, 215, 0, 0.5);
+          margin-bottom: 2rem;
           animation: glow 2s ease-in-out infinite alternate;
           text-align: center;
         }
 
         @keyframes glow {
-          from { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
-          to { text-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700; }
+          from { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px #ffd700, 0 0 30px #ffd700; }
+          to { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 30px #ffd700, 0 0 40px #ffd700, 0 0 50px #ffd700; }
         }
 
         #playAgainButton {
-          padding: 12px 25px;
-          font-size: 18px;
-          background: linear-gradient(135deg, #4CAF50, #45a049);
+          padding: 1.25rem 2rem;
+          font-size: 1.125rem;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          background: linear-gradient(135deg in oklch, hsl(0 80% 50% / 0.95), hsl(0 85% 55% / 0.95) 50%, hsl(0 75% 48% / 0.95));
           color: white;
-          border: none;
-          border-radius: 10px;
+          border: 2px solid hsl(0 70% 40%);
+          border-radius: 22px;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 8px 28px rgba(220, 38, 38, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         #playAgainButton:hover {
+          background: linear-gradient(135deg in oklch, hsl(0 85% 55% / 1), hsl(0 90% 60% / 1) 50%, hsl(0 80% 52% / 1));
           transform: scale(1.05);
-          box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+          box-shadow: 0 12px 36px rgba(220, 38, 38, 0.7), 0 6px 16px rgba(0, 0, 0, 0.5);
+          border-color: hsl(0 80% 45%);
         }
 
         .card-value {
           font-size: 16px;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 700;
           margin-top: 3px;
         }
 
@@ -1116,49 +1167,58 @@ const UnoGame3D: React.FC = () => {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.9);
-          padding: 25px;
-          border-radius: 15px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.95), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.95), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.9));
+          padding: 2rem;
+          border-radius: 22px;
+          border: 2px solid #ffd700;
           display: ${showColorPicker ? 'flex' : 'none'};
           flex-direction: column;
           align-items: center;
           pointer-events: auto;
-          backdrop-filter: blur(10px);
-          border: 2px solid #ffd700;
+          backdrop-filter: blur(12px);
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px, 0 0 20px rgba(255, 215, 0, 0.3);
           z-index: 50;
         }
 
         #colorPicker h3 {
-          margin-bottom: 15px;
+          margin-bottom: 1.25rem;
           color: #ffd700;
-          font-size: 22px;
+          font-size: 1.5rem;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 700;
+          letter-spacing: 0.08em;
           text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
 
         .color-options {
           display: flex;
-          gap: 15px;
-          margin-bottom: 15px;
+          gap: 1rem;
+          margin-bottom: 1rem;
         }
 
         .color-button {
-          width: 70px;
-          height: 70px;
+          width: 80px;
+          height: 80px;
           border-radius: 50%;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           border: 3px solid white;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: bold;
+          font-weight: 700;
+          font-family: 'Source Sans Pro', sans-serif;
           font-size: 14px;
+          letter-spacing: 0.05em;
           text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .color-button:hover {
-          transform: scale(1.1);
-          box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+          transform: scale(1.15);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.5);
         }
 
         .color-button.red { 
@@ -1183,16 +1243,23 @@ const UnoGame3D: React.FC = () => {
           top: 40%;
           left: 50%;
           transform: translate(-50%, -50%);
-          background: rgba(0, 0, 0, 0.8);
-          padding: 20px 30px;
-          border-radius: 15px;
+          background: linear-gradient(235deg, hsl(45 50% 6% / 0.95), hsl(45 50% 6% / 0) 33%), 
+                      linear-gradient(45deg, hsl(0 50% 6% / 0.95), hsl(0 50% 6% / 0) 33%), 
+                      linear-gradient(hsl(220deg 25% 4.8% / 0.9));
+          padding: 1.75rem 2.5rem;
+          border-radius: 22px;
+          border: 2px solid #ffd700;
           text-align: center;
-          font-size: 24px;
+          font-size: 1.5rem;
+          font-family: 'Source Sans Pro', sans-serif;
+          font-weight: 700;
+          letter-spacing: 0.08em;
           color: #ffd700;
           text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
           pointer-events: none;
           z-index: 20;
-          border: 2px solid #ffd700;
+          box-shadow: hsl(0 50% 2%) 0px 10px 16px -8px, hsl(0 50% 4%) 0px 20px 36px -14px, 0 0 20px rgba(255, 215, 0, 0.3);
+          backdrop-filter: blur(12px);
           display: ${dealingAnimation ? 'block' : 'none'};
         }
       `}</style>
