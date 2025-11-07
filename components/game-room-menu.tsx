@@ -38,19 +38,6 @@ useEffect(() => {
   ])
   const [selectedPreset, setSelectedPreset] = useState<string | null>("clasico")
 
-  // Ajustar cantidad de espacios de jugadores según selección (2,4)
-  const handlePlayersCountChange = (value: string) => {
-    const count = Number(value) || 4
-    setPlayers((prev) => {
-      const next = prev.slice(0, count)
-      for (let i = next.length; i < count; i++) {
-        next.push({ id: i + 1, name: "VACÍO", isEmpty: true, isBot: false } as any)
-      }
-      // Reindex ids
-      return next.map((p, idx) => ({ ...p, id: idx + 1 }))
-    })
-  }
-
   const generateRoomCode = () => {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
   const numbers = '0123456789'
@@ -71,19 +58,43 @@ useEffect(() => {
 }
 
   const addBot = () => {
-  const emptySlot = players.findIndex((p) => p.isEmpty)
-  if (emptySlot !== -1) {
+    const emptySlot = players.findIndex((p) => p.isEmpty)
+    if (emptySlot !== -1) {
+      const newPlayers = [...players]
+      newPlayers[emptySlot] = {
+        id: emptySlot + 1,
+        name: `BOT${emptySlot}`,
+        isEmpty: false,
+        isBot: true,
+        isHost: false,
+      } as any
+      setPlayers(newPlayers)
+    }
+  }
+
+  const fillWithBots = () => {
     const newPlayers = [...players]
-    newPlayers[emptySlot] = {
-      id: emptySlot + 1,
-      name: `BOT${emptySlot}`,
-      isEmpty: false,
-      isBot: true,
-      isHost: false,
-    } as any
+    let botCount = 1
+    
+    for (let i = 1; i < newPlayers.length; i++) { // Empezamos desde 1 para no tocar al host
+      if (newPlayers[i].isEmpty) {
+        newPlayers[i] = {
+          id: i + 1,
+          name: `BOT${botCount}`,
+          isEmpty: false,
+          isBot: true,
+          isHost: false,
+        } as any
+        botCount++
+      }
+    }
     setPlayers(newPlayers)
   }
-}
+
+  const canStartGame = () => {
+    const activePlayers = players.filter(p => !p.isEmpty)
+    return activePlayers.length === 4
+  }
 
   const removePlayer = (id: number) => {
     const newPlayers = [...players]
@@ -138,18 +149,9 @@ useEffect(() => {
           {/* Columna Izquierda: Jugadores */}
           <div className="column players-column">
             <div className="column-header">
-              <h3 className="column-title text-white">JUGADORES {players.filter((p) => !p.isEmpty).length}/{players.length}</h3>
+              <h3 className="column-title text-white">JUGADORES {players.filter((p) => !p.isEmpty).length}/4</h3>
+              <p className="text-xs text-gray-300 text-center mt-1">4 jugadores requeridos para iniciar</p>
             </div>
-
-            <Select defaultValue="4" onValueChange={handlePlayersCountChange}>
-              <SelectTrigger className="glass-input mb-4">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2">2 JUGADORES</SelectItem>
-                <SelectItem value="4">4 JUGADORES</SelectItem>
-              </SelectContent>
-            </Select>
 
             <div className="players-list">
               {players.map((player) => (
@@ -184,9 +186,20 @@ useEffect(() => {
                 variant="outline"
                 size="sm"
                 onClick={addBot}
+                disabled={players.filter(p => p.isEmpty).length === 0}
               >
                 <Image src="/icons/robot-icon.png" alt="Bot" width={16} height={16} className="mr-2" />
                 Agregar Bot
+              </Button>
+              <Button
+                className="glass-button action-btn bg-blue-600 hover:bg-blue-700 text-white"
+                variant="outline"
+                size="sm"
+                onClick={fillWithBots}
+                disabled={players.filter(p => p.isEmpty).length === 0}
+              >
+                <Image src="/icons/robot-icon.png" alt="Bot" width={16} height={16} className="mr-2" />
+                Completar con Bots
               </Button>
             </div>
           </div>
@@ -315,11 +328,16 @@ useEffect(() => {
             INVITAR
           </Button>
           <Button 
-            className="footer-button glass-button start-button bg-red-600 hover:bg-red-700"
-            onClick={onStartGame}
+            className={`footer-button glass-button start-button ${
+              canStartGame() 
+                ? 'bg-red-600 hover:bg-red-700' 
+                : 'bg-gray-600 cursor-not-allowed opacity-50'
+            }`}
+            onClick={canStartGame() ? onStartGame : undefined}
+            disabled={!canStartGame()}
           >
             <Play className="w-5 h-5 mr-2" />
-            INICIAR
+            {canStartGame() ? 'INICIAR' : `FALTAN ${4 - players.filter(p => !p.isEmpty).length} JUGADORES`}
           </Button>
         </div>
       </div>
