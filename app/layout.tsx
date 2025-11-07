@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "UNO - Juego de Cartas",
   description: "Juega al clásico juego de cartas UNO",
   generator: "v0.app",
+  icons: {
+    icon: "/icons/uno-logo.png",
+    shortcut: "/icons/uno-logo.png",
+    apple: "/icons/uno-logo.png",
+  },
 }
 
 export default function RootLayout({
