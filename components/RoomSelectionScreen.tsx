@@ -413,7 +413,26 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           backdrop-filter: blur(12px);
           box-shadow: hsl(var(--hue2) 50% 2%) 0px 10px 16px -8px,
             hsl(var(--hue2) 50% 4%) 0px 20px 36px -14px;
-          overflow-y: visible;
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+
+        /* Custom scrollbar for main container */
+        .glass-room-selection-container::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .glass-room-selection-container::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .glass-room-selection-container::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+        }
+
+        .glass-room-selection-container::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.4);
         }
 
         .shine,
@@ -604,6 +623,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           display: flex;
           flex-direction: column;
           gap: 1rem;
+          min-height: 100%;
+          padding-bottom: 1rem;
         }
 
         .logo-section {
@@ -693,6 +714,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           flex-direction: column;
           gap: 1.5rem;
           animation: fadeInUp 0.5s ease-in-out forwards;
+          flex: 1;
+          min-height: 0;
         }
 
         .section-title {
@@ -708,9 +731,30 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           display: flex;
           flex-direction: column;
           gap: 1rem;
-          max-height: none;
-          overflow-y: visible;
+          max-height: 300px;
+          overflow-y: auto;
+          overflow-x: hidden;
           padding: 0.5rem;
+          padding-right: 1rem;
+        }
+
+        /* Custom scrollbar styles */
+        .public-rooms-list::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .public-rooms-list::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+
+        .public-rooms-list::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+        }
+
+        .public-rooms-list::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
         }
 
         .empty-state {
