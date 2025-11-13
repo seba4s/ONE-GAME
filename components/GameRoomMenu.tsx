@@ -364,7 +364,26 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           const playerType = isPlayerLeader ? 'leader' : (player.isBot ? 'bot' : 'player')
 
           return (
-            <div key={player.id} className={`player-card-wrapper ${playerType}-wrapper`}>
+            <div key={player.id} style={{
+              background: isPlayerLeader 
+                ? 'linear-gradient(135deg, rgba(255, 229, 92, 0.3), rgba(255, 215, 0, 0.2))'
+                : player.isBot 
+                ? 'linear-gradient(135deg, rgba(196, 181, 253, 0.3), rgba(139, 92, 246, 0.2))'
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1))',
+              border: isPlayerLeader 
+                ? '2px solid #FFE55C'
+                : player.isBot 
+                ? '2px solid #C4B5FD'
+                : '2px solid rgba(255, 255, 255, 0.5)',
+              borderRadius: '12px',
+              padding: '8px',
+              marginBottom: '8px',
+              boxShadow: isPlayerLeader 
+                ? '0 0 20px rgba(255, 229, 92, 0.3)'
+                : player.isBot 
+                ? '0 0 20px rgba(196, 181, 253, 0.3)'
+                : '0 0 10px rgba(255, 255, 255, 0.1)'
+            }}>
               <div className={`player-card ${isPlayerLeader ? 'leader-card' : ''} ${player.isBot ? 'bot-card' : ''}`}>
                 <div className="player-avatar">
                   {player.isBot ? (
@@ -433,7 +452,14 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
 
         {/* Slots vacíos */}
         {Array.from({ length: emptySlots }, (_, idx) => (
-          <div key={`empty-${idx}`} className="player-card-wrapper empty-wrapper">
+          <div key={`empty-${idx}`} style={{
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+            border: '2px dashed rgba(255, 255, 255, 0.3)',
+            borderRadius: '12px',
+            padding: '8px',
+            marginBottom: '8px',
+            boxShadow: 'none'
+          }}>
             <div className="player-card empty">
               <div className="player-avatar">
                 <div className="avatar-empty">
