@@ -360,84 +360,93 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           // Mostrar email si no hay nickname, o un texto por defecto
           const displayName = player.nickname?.trim() || player.userEmail || 'Jugador'
 
+          // Determinar el tipo de jugador para el estilo del card
+          const playerType = isPlayerLeader ? 'leader' : (player.isBot ? 'bot' : 'player')
+
           return (
-            <div key={player.id} className={`player-card ${isPlayerLeader ? 'leader-card' : ''} ${player.isBot ? 'bot-card' : ''}`}>
-              <div className="player-avatar">
-                {player.isBot ? (
-                  <div className="avatar-bot">
-                    <Bot size={24} style={{color: '#FFFFFF'}} />
-                  </div>
-                ) : (
-                  <div className={`avatar-human ${isPlayerLeader ? 'avatar-leader' : ''}`}>
-                    <Users size={24} style={{color: isPlayerLeader ? '#FFE55C' : '#FFFFFF'}} />
-                  </div>
-                )}
-              </div>
-
-              <div className="player-info">
-                <div className="player-name-container">
-                  {isPlayerLeader && (
-                    <Crown className="crown-icon-inline" size={16} style={{color: '#FFE55C'}} />
-                  )}
-                  <span className="player-name" style={{color: '#FFFFFF'}}>{displayName}</span>
-                </div>
-                <div className="player-status">
-                  {isPlayerLeader ? (
-                    <span className="status-badge leader-status" style={{color: '#FFE55C'}}>LÍDER</span>
-                  ) : player.isBot ? (
-                    <span className="status-badge bot-status" style={{color: '#C4B5FD'}}>BOT</span>
+            <div key={player.id} className={`player-card-wrapper ${playerType}-wrapper`}>
+              <div className={`player-card ${isPlayerLeader ? 'leader-card' : ''} ${player.isBot ? 'bot-card' : ''}`}>
+                <div className="player-avatar">
+                  {player.isBot ? (
+                    <div className="avatar-bot">
+                      <Bot size={24} style={{color: '#FFFFFF'}} />
+                    </div>
                   ) : (
-                    <span className="status-badge player-status" style={{color: '#93C5FD'}}>JUGADOR</span>
+                    <div className={`avatar-human ${isPlayerLeader ? 'avatar-leader' : ''}`}>
+                      <Users size={24} style={{color: isPlayerLeader ? '#FFE55C' : '#FFFFFF'}} />
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* Acciones del líder */}
-              {isLeader && player.id !== room.leaderId && (
-                <div className="player-actions">
-                  {/* Botón expulsar */}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="action-btn kick-btn"
-                    onClick={() => player.isBot ? handleRemoveBot(player.id) : handleKickPlayer(player.id)}
-                    title={player.isBot ? "Eliminar bot" : "Expulsar jugador"}
-                  >
-                    ✕
-                  </Button>
+                <div className="player-info">
+                  <div className="player-name-container">
+                    {isPlayerLeader && (
+                      <Crown className="crown-icon-inline" size={16} style={{color: '#FFE55C'}} />
+                    )}
+                    <span className="player-name" style={{color: '#FFFFFF'}}>{displayName}</span>
+                  </div>
+                  <div className="player-status">
+                    {isPlayerLeader ? (
+                      <span className="status-badge leader-status" style={{color: '#FFE55C'}}>LÍDER</span>
+                    ) : player.isBot ? (
+                      <span className="status-badge bot-status" style={{color: '#C4B5FD'}}>BOT</span>
+                    ) : (
+                      <span className="status-badge player-status" style={{color: '#93C5FD'}}>JUGADOR</span>
+                    )}
+                  </div>
+                </div>
 
-                  {/* Botón transferir liderazgo (solo para jugadores humanos) */}
-                  {!player.isBot && (
+                {/* Acciones del líder */}
+                {isLeader && player.id !== room.leaderId && (
+                  <div className="player-actions">
+                    {/* Botón expulsar */}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="action-btn transfer-btn"
-                      onClick={() => handleTransferLeader(player.id)}
-                      title="Transferir liderazgo"
+                      className="action-btn kick-btn"
+                      onClick={() => player.isBot ? handleRemoveBot(player.id) : handleKickPlayer(player.id)}
+                      title={player.isBot ? "Eliminar bot" : "Expulsar jugador"}
+                      style={{color: '#FFFFFF'}}
                     >
-                      <Crown size={14} />
+                      ✕
                     </Button>
-                  )}
-                </div>
-              )}
+
+                    {/* Botón transferir liderazgo (solo para jugadores humanos) */}
+                    {!player.isBot && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="action-btn transfer-btn"
+                        onClick={() => handleTransferLeader(player.id)}
+                        title="Transferir liderazgo"
+                        style={{color: '#FFFFFF'}}
+                      >
+                        <Crown size={14} style={{color: '#FFFFFF'}} />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )
         })}
 
         {/* Slots vacíos */}
         {Array.from({ length: emptySlots }, (_, idx) => (
-          <div key={`empty-${idx}`} className="player-card empty">
-            <div className="player-avatar">
-              <div className="avatar-empty">
-                <Users size={24} style={{color: 'rgba(255, 255, 255, 0.6)'}} />
+          <div key={`empty-${idx}`} className="player-card-wrapper empty-wrapper">
+            <div className="player-card empty">
+              <div className="player-avatar">
+                <div className="avatar-empty">
+                  <Users size={24} style={{color: 'rgba(255, 255, 255, 0.6)'}} />
+                </div>
               </div>
-            </div>
-            <div className="player-info">
-              <div className="player-name-container">
-                <span className="player-name empty-name" style={{color: 'rgba(255, 255, 255, 0.7)'}}>Esperando jugador...</span>
-              </div>
-              <div className="player-status">
-                <span className="status-badge empty-status" style={{color: 'rgba(255, 255, 255, 0.6)'}}>VACÍO</span>
+              <div className="player-info">
+                <div className="player-name-container">
+                  <span className="player-name empty-name" style={{color: 'rgba(255, 255, 255, 0.7)'}}>Esperando jugador...</span>
+                </div>
+                <div className="player-status">
+                  <span className="status-badge empty-status" style={{color: 'rgba(255, 255, 255, 0.6)'}}>VACÍO</span>
+                </div>
               </div>
             </div>
           </div>
@@ -895,22 +904,101 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           gap: 1rem;
         }
 
+        /* NUEVOS WRAPPERS DE JUGADORES */
+        .player-card-wrapper {
+          position: relative;
+          border-radius: 16px;
+          padding: 3px;
+          background: linear-gradient(135deg, transparent, transparent);
+          transition: all 0.3s ease;
+        }
+
+        .player-card-wrapper.leader-wrapper {
+          background: linear-gradient(
+            135deg, 
+            rgba(255, 215, 0, 0.6), 
+            rgba(255, 185, 0, 0.4), 
+            rgba(255, 140, 0, 0.6)
+          );
+          box-shadow: 
+            0 0 20px rgba(255, 215, 0, 0.3),
+            0 0 40px rgba(255, 140, 0, 0.2);
+          border: 2px solid rgba(255, 215, 0, 0.8);
+        }
+
+        .player-card-wrapper.player-wrapper {
+          background: linear-gradient(
+            135deg, 
+            rgba(255, 255, 255, 0.4), 
+            rgba(255, 255, 255, 0.2), 
+            rgba(255, 255, 255, 0.4)
+          );
+          box-shadow: 
+            0 0 15px rgba(255, 255, 255, 0.2),
+            0 0 30px rgba(255, 255, 255, 0.1);
+          border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .player-card-wrapper.bot-wrapper {
+          background: linear-gradient(
+            135deg, 
+            rgba(139, 92, 246, 0.6), 
+            rgba(124, 58, 237, 0.4), 
+            rgba(168, 85, 247, 0.6)
+          );
+          box-shadow: 
+            0 0 20px rgba(139, 92, 246, 0.3),
+            0 0 40px rgba(168, 85, 247, 0.2);
+          border: 2px solid rgba(139, 92, 246, 0.8);
+        }
+
+        .player-card-wrapper.empty-wrapper {
+          background: linear-gradient(
+            135deg, 
+            rgba(255, 255, 255, 0.1), 
+            rgba(255, 255, 255, 0.05), 
+            rgba(255, 255, 255, 0.1)
+          );
+          border: 2px dashed rgba(255, 255, 255, 0.3);
+          box-shadow: none;
+        }
+
+        /* Efectos hover para los wrappers */
+        .player-card-wrapper:hover {
+          transform: translateY(-2px);
+        }
+
+        .player-card-wrapper.leader-wrapper:hover {
+          box-shadow: 
+            0 0 30px rgba(255, 215, 0, 0.5),
+            0 0 60px rgba(255, 140, 0, 0.3);
+        }
+
+        .player-card-wrapper.player-wrapper:hover {
+          box-shadow: 
+            0 0 25px rgba(255, 255, 255, 0.3),
+            0 0 50px rgba(255, 255, 255, 0.15);
+        }
+
+        .player-card-wrapper.bot-wrapper:hover {
+          box-shadow: 
+            0 0 30px rgba(139, 92, 246, 0.5),
+            0 0 60px rgba(168, 85, 247, 0.3);
+        }
+
         .player-card {
           display: flex;
           align-items: center;
           gap: 1rem;
           padding: 1.25rem;
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(37, 99, 235, 0.4));
-          border-radius: 14px;
-          border: 2px solid rgba(59, 130, 246, 0.8);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+          border-radius: 12px;
+          border: none;
           transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
           backdrop-filter: blur(12px);
-          box-shadow:
-            0 4px 20px rgba(59, 130, 246, 0.4),
-            0 0 30px rgba(59, 130, 246, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         /* FORZAR COLOR BLANCO AGRESIVO */
@@ -928,79 +1016,22 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
           transition: left 0.5s ease;
         }
 
         .player-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
-          border-color: rgba(59, 130, 246, 0.6);
+          transform: none; /* El hover se maneja en el wrapper */
         }
 
         .player-card:hover::before {
           left: 100%;
         }
 
-        .player-card.leader-card {
-          background: linear-gradient(135deg, rgba(255, 215, 0, 0.6), rgba(255, 185, 0, 0.5), rgba(255, 140, 0, 0.4));
-          border: 2px solid rgba(255, 215, 0, 1);
-          box-shadow:
-            0 4px 28px rgba(255, 215, 0, 0.6),
-            0 8px 50px rgba(255, 140, 0, 0.5),
-            0 0 40px rgba(255, 215, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4);
-          animation: leader-glow 3s ease-in-out infinite;
-        }
-
-        @keyframes leader-glow {
-          0%, 100% {
-            box-shadow:
-              0 4px 28px rgba(255, 215, 0, 0.6),
-              0 8px 50px rgba(255, 140, 0, 0.5),
-              0 0 40px rgba(255, 215, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.4);
-          }
-          50% {
-            box-shadow:
-              0 6px 36px rgba(255, 215, 0, 0.8),
-              0 12px 70px rgba(255, 140, 0, 0.7),
-              0 0 60px rgba(255, 215, 0, 0.6),
-              inset 0 1px 0 rgba(255, 255, 255, 0.5);
-          }
-        }
-
-        .player-card.leader-card::before {
-          background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
-        }
-
-        .player-card.leader-card:hover {
-          transform: translateY(-3px);
-          border-color: rgba(255, 215, 0, 1);
-        }
-
-        .player-card.bot-card {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(124, 58, 237, 0.4));
-          border: 2px solid rgba(139, 92, 246, 0.8);
-          box-shadow:
-            0 4px 20px rgba(139, 92, 246, 0.4),
-            0 0 30px rgba(139, 92, 246, 0.25),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .player-card.bot-card:hover {
-          box-shadow:
-            0 6px 24px rgba(139, 92, 246, 0.35),
-            0 0 40px rgba(139, 92, 246, 0.2);
-          border-color: rgba(139, 92, 246, 0.8);
-        }
-
         .player-card.empty {
           opacity: 0.7;
-          border-style: dashed;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.05));
-          border-color: rgba(255, 255, 255, 0.3);
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+          border-style: none;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
         }
 
         .player-avatar {
@@ -1332,7 +1363,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .kick-btn {
-          color: #EF4444;
+          color: #FFFFFF !important;
           font-weight: 700;
           background: rgba(239, 68, 68, 0.1);
         }
@@ -1340,16 +1371,23 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         .kick-btn:hover {
           background: rgba(239, 68, 68, 0.2);
           transform: scale(1.1);
+          color: #FFFFFF !important;
         }
 
         .transfer-btn {
-          color: #FFD700;
+          color: #FFFFFF !important;
           background: rgba(255, 215, 0, 0.1);
         }
 
         .transfer-btn:hover {
           background: rgba(255, 215, 0, 0.2);
           transform: scale(1.1);
+          color: #FFFFFF !important;
+        }
+
+        .transfer-btn svg {
+          color: #FFFFFF !important;
+          fill: #FFFFFF !important;
         }
 
         .remove-btn {
