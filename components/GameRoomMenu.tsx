@@ -869,14 +869,17 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .column-title {
-          color: white;
+          color: #FFFFFF;
           font-size: 1.2rem;
           font-weight: 800;
           margin-bottom: 1.5rem;
           text-align: center;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+          text-shadow: 
+            0 2px 8px rgba(0, 0, 0, 0.8),
+            0 0 16px rgba(255, 255, 255, 0.3),
+            0 0 24px rgba(255, 140, 0, 0.2);
         }
 
         .players-grid {
@@ -1008,7 +1011,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
             0 0 20px rgba(59, 130, 246, 0.6),
             0 0 40px rgba(59, 130, 246, 0.3),
             inset 0 2px 6px rgba(255, 255, 255, 0.3);
-          color: white;
+          color: #FFFFFF;
         }
 
         .avatar-human.avatar-leader {
@@ -1043,7 +1046,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
             0 0 20px rgba(139, 92, 246, 0.6),
             0 0 40px rgba(139, 92, 246, 0.3),
             inset 0 2px 6px rgba(255, 255, 255, 0.3);
-          color: white;
+          color: #FFFFFF;
           animation: pulse-bot 2s infinite;
         }
 
@@ -1063,9 +1066,9 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .avatar-empty {
-          background: rgba(255, 255, 255, 0.05);
-          border: 3px dashed rgba(255, 255, 255, 0.2);
-          color: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.08);
+          border: 3px dashed rgba(255, 255, 255, 0.3);
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .player-info {
@@ -1082,32 +1085,38 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .crown-icon-inline {
-          color: #FFD700;
+          color: #FFE55C;
+          filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
           animation: crown-glow 2s infinite;
         }
 
         @keyframes crown-glow {
           0%, 100% {
-            filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5));
+            filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
           }
           50% {
-            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+            filter: drop-shadow(0 0 12px rgba(255, 215, 0, 1)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
           }
         }
 
         .player-name {
-          color: white;
+          color: #FFFFFF;
           font-weight: 700;
           font-size: 1.05rem;
           letter-spacing: 0.02em;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+          text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.8),
+            0 0 8px rgba(255, 255, 255, 0.3);
           line-height: 1.4;
         }
 
         .player-name.empty-name {
-          color: rgba(255, 255, 255, 0.4);
+          color: rgba(255, 255, 255, 0.7);
           font-style: italic;
-          font-weight: 500;
+          font-weight: 600;
+          text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.6),
+            0 0 6px rgba(255, 255, 255, 0.2);
         }
 
         .player-status {
@@ -1122,34 +1131,54 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           border-radius: 14px;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+          text-shadow: 
+            0 1px 3px rgba(0, 0, 0, 0.8),
+            0 0 6px rgba(255, 255, 255, 0.2);
         }
 
         .leader-status {
-          background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 185, 0, 0.2));
-          color: #FFD700;
-          border: 1.5px solid rgba(255, 215, 0, 0.6);
-          box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 185, 0, 0.3));
+          color: #FFE55C;
+          border: 1.5px solid rgba(255, 215, 0, 0.8);
+          box-shadow: 
+            0 2px 8px rgba(255, 215, 0, 0.4),
+            0 0 12px rgba(255, 215, 0, 0.3);
+          text-shadow: 
+            0 1px 3px rgba(0, 0, 0, 0.8),
+            0 0 8px rgba(255, 215, 0, 0.5);
         }
 
         .bot-status {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(124, 58, 237, 0.2));
-          color: #A78BFA;
-          border: 1.5px solid rgba(139, 92, 246, 0.6);
-          box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(124, 58, 237, 0.3));
+          color: #C4B5FD;
+          border: 1.5px solid rgba(139, 92, 246, 0.8);
+          box-shadow: 
+            0 2px 8px rgba(139, 92, 246, 0.4),
+            0 0 12px rgba(139, 92, 246, 0.3);
+          text-shadow: 
+            0 1px 3px rgba(0, 0, 0, 0.8),
+            0 0 8px rgba(139, 92, 246, 0.5);
         }
 
         .player-status {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
-          color: #60A5FA;
-          border: 1.5px solid rgba(59, 130, 246, 0.6);
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.3));
+          color: #93C5FD;
+          border: 1.5px solid rgba(59, 130, 246, 0.8);
+          box-shadow: 
+            0 2px 8px rgba(59, 130, 246, 0.4),
+            0 0 12px rgba(59, 130, 246, 0.3);
+          text-shadow: 
+            0 1px 3px rgba(0, 0, 0, 0.8),
+            0 0 8px rgba(59, 130, 246, 0.5);
         }
 
         .empty-status {
-          background: rgba(255, 255, 255, 0.05);
-          color: rgba(255, 255, 255, 0.3);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          text-shadow: 
+            0 1px 3px rgba(0, 0, 0, 0.6),
+            0 0 6px rgba(255, 255, 255, 0.2);
         }
 
         .crown-icon {
