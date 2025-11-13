@@ -385,33 +385,35 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
                 : '0 0 10px rgba(255, 255, 255, 0.1)'
             }}>
               <div className={`player-card ${isPlayerLeader ? 'leader-card' : ''} ${player.isBot ? 'bot-card' : ''}`}>
-                <div className="player-avatar">
-                  {player.isBot ? (
-                    <div className="avatar-bot">
-                      <Bot size={24} style={{color: '#FFFFFF'}} />
-                    </div>
-                  ) : (
-                    <div className={`avatar-human ${isPlayerLeader ? 'avatar-leader' : ''}`}>
-                      <Users size={24} style={{color: isPlayerLeader ? '#FFE55C' : '#FFFFFF'}} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="player-info">
-                  <div className="player-name-container">
-                    {isPlayerLeader && (
-                      <Crown className="crown-icon-inline" size={16} style={{color: '#FFE55C'}} />
-                    )}
-                    <span className="player-name" style={{color: '#FFFFFF'}}>{displayName}</span>
-                  </div>
-                  <div className="player-status">
-                    {isPlayerLeader ? (
-                      <span className="status-badge leader-status" style={{color: '#FFE55C'}}>LÍDER</span>
-                    ) : player.isBot ? (
-                      <span className="status-badge bot-status" style={{color: '#C4B5FD'}}>BOT</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                  <div className="player-avatar">
+                    {player.isBot ? (
+                      <div className="avatar-bot">
+                        <Bot size={24} style={{color: '#FFFFFF'}} />
+                      </div>
                     ) : (
-                      <span className="status-badge player-status" style={{color: '#93C5FD'}}>JUGADOR</span>
+                      <div className={`avatar-human ${isPlayerLeader ? 'avatar-leader' : ''}`}>
+                        <Users size={24} style={{color: isPlayerLeader ? '#FFE55C' : '#FFFFFF'}} />
+                      </div>
                     )}
+                  </div>
+
+                  <div className="player-info" style={{ flex: 1 }}>
+                    <div className="player-name-container" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {isPlayerLeader && (
+                        <Crown className="crown-icon-inline" size={16} style={{color: '#FFE55C'}} />
+                      )}
+                      <span className="player-name" style={{color: '#FFFFFF', fontSize: '14px', fontWeight: '600'}}>{displayName}</span>
+                    </div>
+                    <div className="player-status" style={{ marginTop: '2px' }}>
+                      {isPlayerLeader ? (
+                        <span className="status-badge leader-status" style={{color: '#FFE55C', fontSize: '11px'}}>LÍDER</span>
+                      ) : player.isBot ? (
+                        <span className="status-badge bot-status" style={{color: '#C4B5FD', fontSize: '11px'}}>BOT</span>
+                      ) : (
+                        <span className="status-badge player-status" style={{color: '#93C5FD', fontSize: '11px'}}>JUGADOR</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -461,17 +463,19 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
             boxShadow: 'none'
           }}>
             <div className="player-card empty">
-              <div className="player-avatar">
-                <div className="avatar-empty">
-                  <Users size={24} style={{color: 'rgba(255, 255, 255, 0.6)'}} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                <div className="player-avatar">
+                  <div className="avatar-empty">
+                    <Users size={24} style={{color: 'rgba(255, 255, 255, 0.6)'}} />
+                  </div>
                 </div>
-              </div>
-              <div className="player-info">
-                <div className="player-name-container">
-                  <span className="player-name empty-name" style={{color: 'rgba(255, 255, 255, 0.7)'}}>Esperando jugador...</span>
-                </div>
-                <div className="player-status">
-                  <span className="status-badge empty-status" style={{color: 'rgba(255, 255, 255, 0.6)'}}>VACÍO</span>
+                <div className="player-info" style={{ flex: 1 }}>
+                  <div className="player-name-container">
+                    <span className="player-name empty-name" style={{color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', fontWeight: '600'}}>Esperando jugador...</span>
+                  </div>
+                  <div className="player-status" style={{ marginTop: '2px' }}>
+                    <span className="status-badge empty-status" style={{color: 'rgba(255, 255, 255, 0.6)', fontSize: '11px'}}>VACÍO</span>
+                  </div>
                 </div>
               </div>
             </div>
