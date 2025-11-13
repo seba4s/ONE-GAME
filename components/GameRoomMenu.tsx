@@ -1011,7 +1011,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
             0 0 20px rgba(59, 130, 246, 0.6),
             0 0 40px rgba(59, 130, 246, 0.3),
             inset 0 2px 6px rgba(255, 255, 255, 0.3);
-          color: #FFFFFF;
+          color: #FFFFFF !important;
         }
 
         .avatar-human.avatar-leader {
@@ -1046,7 +1046,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
             0 0 20px rgba(139, 92, 246, 0.6),
             0 0 40px rgba(139, 92, 246, 0.3),
             inset 0 2px 6px rgba(255, 255, 255, 0.3);
-          color: #FFFFFF;
+          color: #FFFFFF !important;
           animation: pulse-bot 2s infinite;
         }
 
@@ -1068,7 +1068,37 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         .avatar-empty {
           background: rgba(255, 255, 255, 0.08);
           border: 3px dashed rgba(255, 255, 255, 0.3);
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        /* Forzar color blanco en iconos de avatares */
+        .avatar-human svg,
+        .avatar-bot svg,
+        .avatar-empty svg {
+          color: #FFFFFF !important;
+          fill: #FFFFFF !important;
+        }
+
+        /* Forzar color dorado en iconos de líderes */
+        .avatar-leader svg {
+          color: #FFE55C !important;
+          fill: #FFE55C !important;
+        }
+
+        /* Forzar colores blancos en todos los elementos de player-card */
+        .player-card * {
+          color: inherit !important;
+        }
+
+        .player-card .player-name,
+        .player-card .player-name * {
+          color: #FFFFFF !important;
+        }
+
+        /* Forzar iconos blancos en player-actions */
+        .player-actions svg,
+        .action-btn svg {
+          color: inherit !important;
         }
 
         .player-info {
@@ -1085,7 +1115,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .crown-icon-inline {
-          color: #FFE55C;
+          color: #FFE55C !important;
           filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
           animation: crown-glow 2s infinite;
         }
@@ -1100,7 +1130,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .player-name {
-          color: #FFFFFF;
+          color: #FFFFFF !important;
           font-weight: 700;
           font-size: 1.05rem;
           letter-spacing: 0.02em;
@@ -1111,7 +1141,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         }
 
         .player-name.empty-name {
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(255, 255, 255, 0.7) !important;
           font-style: italic;
           font-weight: 600;
           text-shadow: 
@@ -1138,7 +1168,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
 
         .leader-status {
           background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 185, 0, 0.3));
-          color: #FFE55C;
+          color: #FFE55C !important;
           border: 1.5px solid rgba(255, 215, 0, 0.8);
           box-shadow: 
             0 2px 8px rgba(255, 215, 0, 0.4),
@@ -1150,7 +1180,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
 
         .bot-status {
           background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(124, 58, 237, 0.3));
-          color: #C4B5FD;
+          color: #C4B5FD !important;
           border: 1.5px solid rgba(139, 92, 246, 0.8);
           box-shadow: 
             0 2px 8px rgba(139, 92, 246, 0.4),
@@ -1162,7 +1192,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
 
         .player-status {
           background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.3));
-          color: #93C5FD;
+          color: #93C5FD !important;
           border: 1.5px solid rgba(59, 130, 246, 0.8);
           box-shadow: 
             0 2px 8px rgba(59, 130, 246, 0.4),
@@ -1174,7 +1204,7 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
 
         .empty-status {
           background: rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(255, 255, 255, 0.6) !important;
           border: 1px solid rgba(255, 255, 255, 0.2);
           text-shadow: 
             0 1px 3px rgba(0, 0, 0, 0.6),

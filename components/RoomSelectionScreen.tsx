@@ -29,7 +29,14 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
 
   // Load public rooms when entering join room screen
   useEffect(() => {
+    console.log("📡 useEffect - Estado cambió:", {
+      showJoinRoom,
+      showPrivateCodeInput,
+      shouldLoadRooms: showJoinRoom && !showPrivateCodeInput
+    })
+    
     if (showJoinRoom && !showPrivateCodeInput) {
+      console.log("🔄 Ejecutando loadPublicRooms automáticamente...")
       loadPublicRooms()
     }
   }, [showJoinRoom, showPrivateCodeInput])
@@ -37,10 +44,18 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
   const loadPublicRooms = async () => {
     setIsLoadingRooms(true)
     try {
+      console.log("🔍 Cargando salas públicas...")
       const rooms = await roomService.getPublicRooms()
+      console.log("✅ Salas públicas cargadas:", rooms)
+      console.log("📊 Cantidad de salas:", rooms.length)
       setPublicRooms(rooms)
     } catch (error: any) {
-      console.error("Error loading public rooms:", error)
+      console.error("❌ Error loading public rooms:", error)
+      console.error("❌ Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      })
       showError("Error", "No se pudieron cargar las salas públicas")
     } finally {
       setIsLoadingRooms(false)
@@ -731,11 +746,15 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           display: flex;
           flex-direction: column;
           gap: 1rem;
-          max-height: 300px;
+          min-height: 300px;
+          max-height: 400px;
           overflow-y: auto;
           overflow-x: hidden;
-          padding: 0.5rem;
-          padding-right: 1rem;
+          padding: 1rem;
+          padding-right: 1.5rem;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Custom scrollbar styles */
@@ -763,9 +782,10 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           align-items: center;
           justify-content: center;
           gap: 0.75rem;
-          padding: 3rem 1rem;
+          padding: 2rem 1rem;
           color: rgba(255, 255, 255, 0.6);
           text-align: center;
+          min-height: 200px;
         }
 
         .empty-state p {
@@ -777,11 +797,12 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 1rem;
-          background: rgba(0, 0, 0, 0.3) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          border-radius: 10px;
+          padding: 1.25rem;
+          background: rgba(0, 0, 0, 0.4) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          border-radius: 12px;
           transition: all 0.2s ease;
+          min-height: 80px;
         }
 
         .room-card:hover {
