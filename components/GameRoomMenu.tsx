@@ -365,11 +365,11 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
               <div className="player-avatar">
                 {player.isBot ? (
                   <div className="avatar-bot">
-                    <Bot size={24} />
+                    <Bot size={24} style={{color: '#FFFFFF'}} />
                   </div>
                 ) : (
                   <div className={`avatar-human ${isPlayerLeader ? 'avatar-leader' : ''}`}>
-                    <Users size={24} />
+                    <Users size={24} style={{color: isPlayerLeader ? '#FFE55C' : '#FFFFFF'}} />
                   </div>
                 )}
               </div>
@@ -377,17 +377,17 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
               <div className="player-info">
                 <div className="player-name-container">
                   {isPlayerLeader && (
-                    <Crown className="crown-icon-inline" size={16} />
+                    <Crown className="crown-icon-inline" size={16} style={{color: '#FFE55C'}} />
                   )}
-                  <span className="player-name">{displayName}</span>
+                  <span className="player-name" style={{color: '#FFFFFF'}}>{displayName}</span>
                 </div>
                 <div className="player-status">
                   {isPlayerLeader ? (
-                    <span className="status-badge leader-status">LÍDER</span>
+                    <span className="status-badge leader-status" style={{color: '#FFE55C'}}>LÍDER</span>
                   ) : player.isBot ? (
-                    <span className="status-badge bot-status">BOT</span>
+                    <span className="status-badge bot-status" style={{color: '#C4B5FD'}}>BOT</span>
                   ) : (
-                    <span className="status-badge player-status">JUGADOR</span>
+                    <span className="status-badge player-status" style={{color: '#93C5FD'}}>JUGADOR</span>
                   )}
                 </div>
               </div>
@@ -429,15 +429,15 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           <div key={`empty-${idx}`} className="player-card empty">
             <div className="player-avatar">
               <div className="avatar-empty">
-                <Users size={24} />
+                <Users size={24} style={{color: 'rgba(255, 255, 255, 0.6)'}} />
               </div>
             </div>
             <div className="player-info">
               <div className="player-name-container">
-                <span className="player-name empty-name">Esperando jugador...</span>
+                <span className="player-name empty-name" style={{color: 'rgba(255, 255, 255, 0.7)'}}>Esperando jugador...</span>
               </div>
               <div className="player-status">
-                <span className="status-badge empty-status">VACÍO</span>
+                <span className="status-badge empty-status" style={{color: 'rgba(255, 255, 255, 0.6)'}}>VACÍO</span>
               </div>
             </div>
           </div>
@@ -906,6 +906,14 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
+        /* FORZAR COLOR BLANCO AGRESIVO */
+        .player-card,
+        .player-card *,
+        .player-card span,
+        .player-card div {
+          color: #FFFFFF !important;
+        }
+
         .player-card::before {
           content: '';
           position: absolute;
@@ -1101,6 +1109,65 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           color: inherit !important;
         }
 
+        /* NUEVOS ESTILOS AGRESIVOS PARA ICONOS */
+        .player-card svg,
+        .player-card .lucide,
+        .player-card [data-lucide] {
+          color: #FFFFFF !important;
+          fill: #FFFFFF !important;
+          stroke: #FFFFFF !important;
+        }
+
+        /* Iconos específicos por tipo */
+        .player-card.leader-card svg,
+        .player-card.leader-card .lucide,
+        .player-card.leader-card [data-lucide] {
+          color: #FFE55C !important;
+          fill: #FFE55C !important;
+          stroke: #FFE55C !important;
+        }
+
+        .crown-icon-inline,
+        .crown-icon-inline svg {
+          color: #FFE55C !important;
+          fill: #FFE55C !important;
+          stroke: #FFE55C !important;
+        }
+
+        /* ÚLTIMO RECURSO - FORZAR TODO EL TEXTO A BLANCO */
+        .players-grid span,
+        .players-grid div,
+        .players-grid p,
+        .players-grid h1,
+        .players-grid h2,
+        .players-grid h3,
+        .players-grid h4,
+        .players-grid h5,
+        .players-grid h6 {
+          color: #FFFFFF !important;
+        }
+
+        /* Excepciones específicas para badges */
+        .players-grid .leader-status,
+        .players-grid .leader-status span {
+          color: #FFE55C !important;
+        }
+
+        .players-grid .bot-status,
+        .players-grid .bot-status span {
+          color: #C4B5FD !important;
+        }
+
+        .players-grid .player-status,
+        .players-grid .player-status span {
+          color: #93C5FD !important;
+        }
+
+        .players-grid .empty-status,
+        .players-grid .empty-status span {
+          color: rgba(255, 255, 255, 0.6) !important;
+        }
+
         .player-info {
           display: flex;
           flex-direction: column;
@@ -1164,6 +1231,27 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
           text-shadow: 
             0 1px 3px rgba(0, 0, 0, 0.8),
             0 0 6px rgba(255, 255, 255, 0.2);
+        }
+
+        /* FORZAR COLORES DE BADGES ESPECÍFICOS */
+        .status-badge.leader-status,
+        .status-badge.leader-status * {
+          color: #FFE55C !important;
+        }
+
+        .status-badge.bot-status,
+        .status-badge.bot-status * {
+          color: #C4B5FD !important;
+        }
+
+        .status-badge.player-status,
+        .status-badge.player-status * {
+          color: #93C5FD !important;
+        }
+
+        .status-badge.empty-status,
+        .status-badge.empty-status * {
+          color: rgba(255, 255, 255, 0.6) !important;
         }
 
         .leader-status {
