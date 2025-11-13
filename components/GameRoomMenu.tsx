@@ -908,48 +908,72 @@ export default function GameRoomMenu({ onBack, onStartGame }: GameRoomMenuProps)
         .player-card-wrapper {
           position: relative;
           border-radius: 16px;
-          padding: 3px;
+          padding: 8px !important;
           background: linear-gradient(135deg, transparent, transparent);
           transition: all 0.3s ease;
+          margin-bottom: 0.5rem;
+          z-index: 10;
+          display: block !important;
+          visibility: visible !important;
+          min-height: 60px;
         }
 
         .player-card-wrapper.leader-wrapper {
           background: linear-gradient(
             135deg, 
-            rgba(255, 215, 0, 0.6), 
-            rgba(255, 185, 0, 0.4), 
-            rgba(255, 140, 0, 0.6)
+            rgba(255, 215, 0, 0.9) !important, 
+            rgba(255, 185, 0, 0.8) !important, 
+            rgba(255, 140, 0, 0.9) !important
           );
           box-shadow: 
-            0 0 20px rgba(255, 215, 0, 0.3),
-            0 0 40px rgba(255, 140, 0, 0.2);
-          border: 2px solid rgba(255, 215, 0, 0.8);
+            0 0 25px rgba(255, 215, 0, 0.5),
+            0 0 50px rgba(255, 140, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          border: 3px solid rgba(255, 215, 0, 1) !important;
+          animation: leader-wrapper-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes leader-wrapper-glow {
+          0%, 100% {
+            box-shadow: 
+              0 0 25px rgba(255, 215, 0, 0.5),
+              0 0 50px rgba(255, 140, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          }
+          50% {
+            box-shadow: 
+              0 0 35px rgba(255, 215, 0, 0.7),
+              0 0 70px rgba(255, 140, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          }
         }
 
         .player-card-wrapper.player-wrapper {
           background: linear-gradient(
             135deg, 
-            rgba(255, 255, 255, 0.4), 
-            rgba(255, 255, 255, 0.2), 
-            rgba(255, 255, 255, 0.4)
+            rgba(255, 255, 255, 0.8) !important, 
+            rgba(255, 255, 255, 0.6) !important, 
+            rgba(255, 255, 255, 0.8) !important
           );
           box-shadow: 
-            0 0 15px rgba(255, 255, 255, 0.2),
-            0 0 30px rgba(255, 255, 255, 0.1);
-          border: 2px solid rgba(255, 255, 255, 0.6);
+            0 0 20px rgba(255, 255, 255, 0.4),
+            0 0 40px rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          border: 3px solid rgba(255, 255, 255, 0.8) !important;
         }
 
         .player-card-wrapper.bot-wrapper {
           background: linear-gradient(
             135deg, 
-            rgba(139, 92, 246, 0.6), 
-            rgba(124, 58, 237, 0.4), 
-            rgba(168, 85, 247, 0.6)
+            rgba(139, 92, 246, 0.9) !important, 
+            rgba(124, 58, 237, 0.8) !important, 
+            rgba(168, 85, 247, 0.9) !important
           );
           box-shadow: 
-            0 0 20px rgba(139, 92, 246, 0.3),
-            0 0 40px rgba(168, 85, 247, 0.2);
-          border: 2px solid rgba(139, 92, 246, 0.8);
+            0 0 25px rgba(139, 92, 246, 0.5),
+            0 0 50px rgba(168, 85, 247, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          border: 3px solid rgba(139, 92, 246, 1) !important;
         }
 
         .player-card-wrapper.empty-wrapper {
