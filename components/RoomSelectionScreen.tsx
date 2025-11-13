@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Plus, LogIn, Users, Lock, RefreshCw } from "lucide-react"
 import Image from "next/image"
+import OneCardsBackground from "@/components/OneCardsBackground"
 import { roomService } from "@/services/room.service"
 import { useNotification } from "@/contexts/NotificationContext"
 import { useGame } from "@/contexts/GameContext"
@@ -170,13 +171,17 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
   }
 
   return (
-    <div className="glass-room-selection-container">
-      <span className="shine shine-top"></span>
-      <span className="shine shine-bottom"></span>
-      <span className="glow glow-top"></span>
-      <span className="glow glow-bottom"></span>
-      <span className="glow glow-bright glow-top"></span>
-      <span className="glow glow-bright glow-bottom"></span>
+    <>
+      {/* Animated Cards Background - Outside container for proper layering */}
+      <OneCardsBackground />
+      
+      <div className="glass-room-selection-container">
+        <span className="shine shine-top"></span>
+        <span className="shine shine-bottom"></span>
+        <span className="glow glow-top"></span>
+        <span className="glow glow-bottom"></span>
+        <span className="glow glow-bright glow-top"></span>
+        <span className="glow glow-bright glow-bottom"></span>
 
       <div className="inner">
         {/* Logo Section */}
@@ -203,10 +208,10 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
               >
                 <Plus className="mr-3 h-8 w-8 transition-transform group-hover:scale-110" />
                 <div className="flex flex-col items-start">
-                  <span className="text-lg font-bold">
+                  <span className="text-2xl font-bold">
                     {isLoading ? "CREANDO..." : "CREAR SALA"}
                   </span>
-                  <span className="text-xs font-normal opacity-90">Inicia un nuevo juego</span>
+                  <span className="text-sm font-normal opacity-90">Inicia un nuevo juego</span>
                 </div>
               </Button>
 
@@ -217,21 +222,22 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
               >
                 <LogIn className="mr-3 h-8 w-8 transition-transform group-hover:scale-110" />
                 <div className="flex flex-col items-start">
-                  <span className="text-lg font-bold">ENTRAR A SALA</span>
-                  <span className="text-xs font-normal opacity-90">Únete a una partida</span>
+                  <span className="text-2xl font-bold">ENTRAR A SALA</span>
+                  <span className="text-sm font-normal opacity-90">Únete a una partida</span>
                 </div>
               </Button>
             </div>
 
             {/* Back Button */}
-            <Button
-              variant="outline"
-              className="back-button glass-button bg-transparent text-white mt-6"
-              onClick={onBack}
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              VOLVER
-            </Button>
+            <div className="absolute top-6 left-6 z-10">
+              <button 
+                onClick={onBack}
+                className="glass-back-button flex items-center gap-3 px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <ArrowLeft className="w-6 h-6" />
+                <span className="text-xl font-semibold">VOLVER</span>
+              </button>
+            </div>
           </>
         ) : !showPrivateCodeInput ? (
           <>
@@ -304,8 +310,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
               >
                 <Lock className="mr-3 h-6 w-6 transition-transform group-hover:scale-110" />
                 <div className="flex flex-col items-start">
-                  <span className="text-base font-bold">SALA PRIVADA</span>
-                  <span className="text-xs font-normal opacity-90">Ingresar código</span>
+                  <span className="text-xl font-bold">SALA PRIVADA</span>
+                  <span className="text-sm font-normal opacity-90">Ingresar código</span>
                 </div>
               </Button>
 
@@ -355,7 +361,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
                 onClick={handleJoinPrivateRoom}
                 disabled={isLoading}
               >
-                <span className="text-lg font-bold">ENTRAR A SALA</span>
+                <span className="text-2xl font-bold">ENTRAR A SALA</span>
               </Button>
 
               <Button
@@ -392,7 +398,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           flex-direction: column;
           border-radius: var(--radius);
           border: var(--border) solid var(--border-color);
-          padding: 2em;
+          padding: 0.5em;
           background: linear-gradient(
               235deg,
               hsl(var(--hue1) 50% 10% / 0.8),
@@ -407,7 +413,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           backdrop-filter: blur(12px);
           box-shadow: hsl(var(--hue2) 50% 2%) 0px 10px 16px -8px,
             hsl(var(--hue2) 50% 4%) 0px 20px 36px -14px;
-          overflow-y: auto;
+          overflow-y: visible;
         }
 
         .shine,
@@ -597,7 +603,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           z-index: 10;
           display: flex;
           flex-direction: column;
-          gap: 2rem;
+          gap: 1rem;
         }
 
         .logo-section {
@@ -606,6 +612,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           align-items: center;
           gap: 1rem;
           text-align: center;
+          margin-top: -6rem;
+          margin-bottom: 0rem;
         }
 
         .uno-logo {
@@ -619,6 +627,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           color: white;
           letter-spacing: 0.1em;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+          white-space: nowrap;
+          width: 100%;
         }
 
         .room-options-container {
@@ -632,7 +642,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           align-items: center !important;
           justify-content: flex-start !important;
           width: 100%;
-          padding: 1.5rem;
+          padding: 1rem;
           border-radius: 12px;
           background: rgba(0, 0, 0, 0.3) !important;
           color: white;
@@ -698,8 +708,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           display: flex;
           flex-direction: column;
           gap: 1rem;
-          max-height: 400px;
-          overflow-y: auto;
+          max-height: none;
+          overflow-y: visible;
           padding: 0.5rem;
         }
 
@@ -979,26 +989,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
             hsl(var(--hue1) 5% 10% / 0.2) 95%
           );
         }
-
-        /* Scrollbar */
-        .public-rooms-list::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .public-rooms-list::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 4px;
-        }
-
-        .public-rooms-list::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 4px;
-        }
-
-        .public-rooms-list::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.4);
-        }
       `}</style>
     </div>
+    </>
   )
 }
