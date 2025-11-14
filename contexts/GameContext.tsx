@@ -346,10 +346,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
     localStorage.setItem('uno_kicked_flag', 'true');
     localStorage.setItem('uno_kicked_timestamp', Date.now().toString());
 
-    // Disconnect from WebSocket COMPLETELY
+    // CRITICAL: Disconnect from WebSocket and DISABLE auto-reconnection
     if (wsServiceRef.current) {
-      console.log('🔌 Desconectando WebSocket...');
-      wsServiceRef.current.disconnect();
+      console.log('🔌 Desconectando WebSocket y desactivando reconexión...');
+      // Disable reconnection BEFORE disconnecting to prevent race conditions
+      wsServiceRef.current.disableReconnection();
+      // Disconnect with preventReconnect=true
+      wsServiceRef.current.disconnect(true);
       wsServiceRef.current = null;
     }
 
@@ -675,9 +678,19 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
   }, []);
 
   const handleError = useCallback((payload: any) => {
-    console.error('❌ Error del juego:', payload);
-    setError(payload.message || 'Error desconocido');
-  }, []);
+    console.error('❌ Error del servidor:', payload);
+
+    // CRITICAL: Check if this is a PLAYER_KICKED error
+    // Backend sends kick rejection as ERROR with code 'PLAYER_KICKED'
+    if (payload.code === 'PLAYER_KICKED') {
+      console.log('🚫 Error de tipo PLAYER_KICKED detectado, activando flujo de expulsión');
+      handlePlayerKicked(payload);
+      return;
+    }
+
+    // Handle as normal error
+    setError(payload.message || payload.error || 'Error desconocido');
+  }, [handlePlayerKicked]);
 
   // ============================================
   // FUNCIONES DE CONEXIÓN
