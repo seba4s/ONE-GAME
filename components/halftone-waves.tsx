@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from "react"
 
-export default function Component() {
+interface HalftoneWavesProps {
+  animate?: boolean;
+  className?: string;
+}
+
+export default function HalftoneWaves({ animate = true, className = "" }: HalftoneWavesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -45,7 +50,7 @@ export default function Component() {
       }
     }
 
-    const animate = () => {
+    const draw = () => {
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
       gradient.addColorStop(0, "rgba(220, 85, 40, 0.1)")
       gradient.addColorStop(1, "rgba(200, 60, 30, 0.1)")
@@ -53,26 +58,41 @@ export default function Component() {
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       drawHalftoneWave()
+    }
 
-      time += 0.015
-      animationFrameId = requestAnimationFrame(animate)
+    const animateFrame = () => {
+      draw()
+
+      // Only increment time and continue animation if enabled
+      if (animate) {
+        time += 0.015
+        animationFrameId = requestAnimationFrame(animateFrame)
+      }
+    }
+
+    const handleResize = () => {
+      resizeCanvas()
+      draw() // Redraw after resize
     }
 
     resizeCanvas()
-    window.addEventListener("resize", resizeCanvas)
+    window.addEventListener("resize", handleResize)
 
-    animate()
+    // Start animation loop
+    animateFrame()
 
     return () => {
-      cancelAnimationFrame(animationFrameId)
-      window.removeEventListener("resize", resizeCanvas)
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+      window.removeEventListener("resize", handleResize)
     }
-  }, [])
+  }, [animate])
 
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-screen"
+      className={className || "w-full h-screen"}
       style={{ background: "linear-gradient(135deg, #DC5528 0%, #C83C1E 100%)" }}
     />
   )
