@@ -1,1159 +1,492 @@
 "use client"
 
+/**
+ * LoginScreen - Pantalla de autenticación
+ * ACTUALIZADO: Ahora usa AuthContext y se conecta con el backend
+ */
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Plus, LogIn, Users, Lock, RefreshCw } from "lucide-react"
+import { Mail, Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
-import GalaxySpiral from "@/components/GalaxySpiral"
-import { roomService } from "@/services/room.service"
-import { useNotification } from "@/contexts/NotificationContext"
-import { useGame } from "@/contexts/GameContext"
 import { useAuth } from "@/contexts/AuthContext"
-import { Room } from "@/types/game.types"
+import { useNotification } from "@/contexts/NotificationContext"
 
-interface RoomSelectionScreenProps {
-  onCreateRoom: () => void
-  onJoinRoomSuccess?: (room: Room) => void
-  onBack: () => void
+interface LoginScreenProps {
+  onLoginSuccess: () => void
+  onBack?: () => void
 }
 
-export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, onBack }: RoomSelectionScreenProps) {
-  const [showJoinRoom, setShowJoinRoom] = useState(false)
-  const [showPrivateCodeInput, setShowPrivateCodeInput] = useState(false)
-  const [roomCode, setRoomCode] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [publicRooms, setPublicRooms] = useState<Room[]>([])
-  const [isLoadingRooms, setIsLoadingRooms] = useState(false)
-  const { success, error: showError } = useNotification()
-  const { connectToGame } = useGame()
-  const { user } = useAuth()
+export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps) {
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login")
+  const [transitionKey, setTransitionKey] = useState(0)
+  const [validationErrors, setValidationErrors] = useState<{
+    email?: string
+    username?: string
+    password?: string
+    confirmPassword?: string
+  }>({})
 
-  // Load public rooms when entering join room screen
-  useEffect(() => {
-    console.log("📡 useEffect - Estado cambió:", {
-      showJoinRoom,
-      showPrivateCodeInput,
-      shouldLoadRooms: showJoinRoom && !showPrivateCodeInput
+  // Funciones de validación
+  const validateEmail = (email: string): string | null => {
+    if (!email.trim()) return "El email es requerido"
+    if (email.includes(' ')) return "El email no debe contener espacios"
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) return "El email no tiene un formato válido"
+    return null
+  }
+
+  const validateUsername = (username: string): string | null => {
+    if (!username.trim()) return "El nombre de usuario es requerido"
+    if (username.includes(' ')) return "El nombre de usuario no debe contener espacios"
+    if (username.length < 3) return "El nombre de usuario debe tener al menos 3 caracteres"
+    return null
+  }
+
+  const validatePassword = (password: string): string | null => {
+    if (!password.trim()) return "La contraseña es requerida"
+    if (password.includes(' ')) return "La contraseña no debe contener espacios"
+    if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres"
+    return null
+  }
+
+  const validateConfirmPassword = (password: string, confirmPassword: string): string | null => {
+    if (!confirmPassword.trim()) return "Debes confirmar la contraseña"
+    if (confirmPassword.includes(' ')) return "La confirmación no debe contener espacios"
+    if (password !== confirmPassword) return "Las contraseñas no coinciden"
+    return null
+  }
+
+  const validateRegistrationForm = (): boolean => {
+    const errors: typeof validationErrors = {}
+    
+    const emailError = validateEmail(registerEmail)
+    if (emailError) errors.email = emailError
+
+    const usernameError = validateUsername(registerUsername)
+    if (usernameError) errors.username = usernameError
+
+    const passwordError = validatePassword(registerPassword)
+    if (passwordError) errors.password = passwordError
+
+    const confirmPasswordError = validateConfirmPassword(registerPassword, registerPasswordConfirm)
+    if (confirmPasswordError) errors.confirmPassword = confirmPasswordError
+
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  // Limpiar error específico cuando el usuario empiece a escribir
+  const clearFieldError = (field: keyof typeof validationErrors) => {
+    setValidationErrors(prev => {
+      const newErrors = { ...prev }
+      delete newErrors[field]
+      return newErrors
     })
-
-    if (showJoinRoom && !showPrivateCodeInput) {
-      console.log("🔄 Ejecutando loadPublicRooms automáticamente...")
-      loadPublicRooms()
-    }
-  }, [showJoinRoom, showPrivateCodeInput])
-
-  const loadPublicRooms = async () => {
-    setIsLoadingRooms(true)
-    try {
-      console.log("🔍 Cargando salas públicas...")
-      const rooms = await roomService.getPublicRooms()
-      console.log("✅ Salas públicas cargadas:", rooms)
-      console.log("📊 Cantidad de salas:", rooms.length)
-
-      // CRITICAL: Filter out rooms where the user is already a member
-      // This prevents the user from trying to join their own room
-      const filteredRooms = rooms.filter(room => {
-        if (!user) {
-          console.log("⚠️ No hay usuario autenticado, mostrando todas las salas")
-          return true
-        }
-
-        console.log(`🔍 Revisando sala ${room.code}:`, {
-          roomLeaderId: room.leaderId,
-          userId: user.id,
-          userEmail: user.email,
-          players: room.players.map(p => ({ id: p.id, email: p.userEmail }))
-        })
-
-        // Check if user is the leader (compare as strings to handle UUID vs number)
-        const isLeader = String(room.leaderId) === String(user.id)
-
-        // Check if user is in the players list
-        const isPlayer = room.players.some(p => {
-          const matchEmail = p.userEmail === user.email
-          const matchId = String(p.id) === String(user.id)
-          return matchEmail || matchId
-        })
-
-        if (isLeader || isPlayer) {
-          console.log(`🚫 Filtrando sala ${room.code} - usuario ya es miembro (isLeader: ${isLeader}, isPlayer: ${isPlayer})`)
-          return false
-        }
-
-        console.log(`✅ Sala ${room.code} - usuario NO es miembro, mostrando`)
-        return true
-      })
-
-      console.log("📊 Salas después de filtrar:", filteredRooms.length)
-      setPublicRooms(filteredRooms)
-    } catch (error: any) {
-      console.error("❌ Error loading public rooms:", error)
-      console.error("❌ Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      })
-      showError("Error", "No se pudieron cargar las salas públicas")
-    } finally {
-      setIsLoadingRooms(false)
-    }
   }
 
-  const handleCreateRoom = async () => {
-    setIsLoading(true)
-    try {
-      console.log("🏠 Creando nueva sala...")
+  const handleTabChange = (newTab: "login" | "register") => {
+    if (newTab === activeTab) return
+    setActiveTab(newTab)
+    setTransitionKey(prev => prev + 1) // Fuerza re-animación
+  }
+  const [isLoading, setIsLoading] = useState(false)
 
-      // Crear sala en el backend
-      const newRoom = await roomService.createRoom({
-        isPrivate: false,
-        maxPlayers: 4,
-        initialHandSize: 7,
-        turnTimeLimit: 60,
-        allowStackingCards: true,
-        pointsToWin: 500,
-        allowBots: true,
-      })
+  // Login form
+  const [loginEmail, setLoginEmail] = useState("")
+  const [loginPassword, setLoginPassword] = useState("")
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
 
-      console.log("✅ Sala creada exitosamente:", newRoom)
-      success("¡Sala creada!", `Código: ${newRoom.code}`)
+  // Register form
+  const [registerEmail, setRegisterEmail] = useState("")
+  const [registerUsername, setRegisterUsername] = useState("")
+  const [registerPassword, setRegisterPassword] = useState("")
+  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState("")
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
+  const [showRegisterPasswordConfirm, setShowRegisterPasswordConfirm] = useState(false)
 
-      // Conectar al WebSocket de la sala
-      const token = localStorage.getItem('uno_auth_token')
-      if (token) {
-        console.log("🔌 Conectando al WebSocket de la sala creada...")
-        await connectToGame(newRoom.code, token)
-        console.log("✅ WebSocket conectado")
+  // Hooks
+  const { login, register: registerUser, error: authError } = useAuth()
+  const { success, error: showError } = useNotification()
 
-        // Wait for WebSocket to sync room state
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
 
-      // Navegar INMEDIATAMENTE al lobby
-      console.log("🚀 Navegando al lobby de la sala...")
-      onCreateRoom()
-    } catch (error: any) {
-      console.error("❌ Error al crear sala:", error)
-      const errorMessage = error.response?.data?.message || error.message || "No se pudo crear la sala"
-      showError("Error al crear sala", errorMessage)
-    } finally {
-      setIsLoading(false)
-    }
+  // Button animation function using keyframes
+  const animateButton = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const button = e.currentTarget
+
+    // Add the animation class
+    button.classList.add('button-pulse')
+
+    // Add glow effect
+    button.style.boxShadow = "0 0 20px rgba(99, 102, 241, 0.8)"
+
+    // Remove animation class after it completes
+    setTimeout(() => {
+      button.classList.remove('button-pulse')
+      button.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.3)"
+    }, 400)
   }
 
-  const handleJoinPublicRoom = async (room: Room) => {
-    setIsLoading(true)
-    try {
-      console.log("🔍 Intentando unirse a sala pública:", room.code)
-
-      // Join room via backend API
-      const joinedRoom = await roomService.joinRoom(room.code)
-      console.log("✅ Unido a la sala exitosamente:", joinedRoom)
-      console.log("👥 Jugadores en la sala:", joinedRoom.players)
-
-      success("¡Éxito!", `Te has unido a la sala ${room.code}`)
-
-      // Connect to WebSocket - NOTE: We pass joinedRoom to use for initial state
-      const token = localStorage.getItem('uno_auth_token')
-      if (token) {
-        console.log("🔌 Conectando al WebSocket con información de sala ya obtenida...")
-        await connectToGame(room.code, token, joinedRoom)
-        console.log("✅ WebSocket conectado")
-
-        // Small wait to ensure WebSocket subscriptions are ready
-        await new Promise(resolve => setTimeout(resolve, 500))
-      }
-
-      // Navigate to room (GameRoomMenu will use wsRoom from context)
-      if (onJoinRoomSuccess) {
-        onJoinRoomSuccess(joinedRoom)
-      } else {
-        onCreateRoom()
-      }
-    } catch (error: any) {
-      console.error("❌ Error al unirse a la sala:", error)
-      const errorMessage = error.response?.data?.message || error.message || "No se pudo unir a la sala"
-      showError("Error al unirse", errorMessage)
-    } finally {
-      setIsLoading(false)
+  // Handle Email/Username Login
+  const handleEmailLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
     }
-  }
 
-  const handleJoinPrivateRoom = async () => {
-    if (!roomCode.trim()) {
-      showError("Error", "Por favor ingresa un código de sala")
+    // Validar campos vacíos
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      showError("Error", "Por favor completa todos los campos")
       return
     }
 
-    if (roomCode.trim().length !== 6) {
-      showError("Error", "El código debe tener 6 caracteres")
+    // Validar formato de email
+    const emailError = validateEmail(loginEmail.trim())
+    if (emailError) {
+      showError("Error de validación", emailError)
+      return
+    }
+
+    // Validar contraseña (debe tener al menos 8 caracteres)
+    if (loginPassword.length < 8) {
+      showError("Error de validación", "La contraseña debe tener al menos 8 caracteres")
+      return
+    }
+
+    // Validar que no haya espacios
+    if (loginPassword.includes(' ')) {
+      showError("Error de validación", "La contraseña no debe contener espacios")
       return
     }
 
     setIsLoading(true)
     try {
-      console.log("🔍 Conectando a sala privada con código:", roomCode)
-
-      // Join room via backend API
-      const joinedRoom = await roomService.joinRoom(roomCode)
-      console.log("✅ Unido a la sala exitosamente:", joinedRoom)
-      console.log("👥 Jugadores en la sala:", joinedRoom.players)
-
-      success("¡Éxito!", `Te has unido a la sala ${roomCode}`)
-
-      // Connect to WebSocket - NOTE: We pass joinedRoom to use for initial state
-      const token = localStorage.getItem('uno_auth_token')
-      if (token) {
-        console.log("🔌 Conectando al WebSocket con información de sala ya obtenida...")
-        await connectToGame(roomCode, token, joinedRoom)
-        console.log("✅ WebSocket conectado")
-
-        // Small wait to ensure WebSocket subscriptions are ready
-        await new Promise(resolve => setTimeout(resolve, 500))
-      }
-
-      // Navigate to room (GameRoomMenu will use wsRoom from context)
-      if (onJoinRoomSuccess) {
-        onJoinRoomSuccess(joinedRoom)
-      } else {
-        // Si no hay callback, ir a crear sala por defecto
-        onCreateRoom()
-      }
+      await login(loginEmail.trim(), loginPassword)
+      success("¡Bienvenido!", "Sesión iniciada correctamente")
+      onLoginSuccess()
     } catch (error: any) {
-      console.error("❌ Error al unirse a la sala:", error)
-      const errorMessage = error.response?.data?.message || error.message || "No se pudo conectar a la sala"
-      showError("Error al conectar", errorMessage)
+      showError("Error de autenticación", error.message || "Credenciales incorrectas")
     } finally {
       setIsLoading(false)
     }
   }
+
+  // Handle Registration
+  const handleRegister = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
+
+    // Validar formulario antes de enviar
+    if (!validateRegistrationForm()) {
+      // Los errores ya están en el estado validationErrors
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await registerUser(registerEmail.trim(), registerUsername.trim(), registerPassword.trim())
+      success("¡Registro exitoso!", "Tu cuenta ha sido creada e iniciaste sesión automáticamente")
+      // Limpiar el formulario
+      setRegisterEmail("")
+      setRegisterUsername("")
+      setRegisterPassword("")
+      setRegisterPasswordConfirm("")
+      setValidationErrors({})
+      onLoginSuccess()
+    } catch (error: any) {
+      showError("Error al registrarse", error.message || "Intenta de nuevo")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Handle Google Login
+  const handleGoogleLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
+    setIsLoading(true)
+    try {
+      // Redirigir al endpoint OAuth2 de Google en el backend
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+      window.location.href = `${backendUrl}/oauth2/authorize/google`
+    } catch (error) {
+      showError("Error", "Error al iniciar sesión con Google")
+      setIsLoading(false)
+    }
+  }
+
+  // Handle GitHub Login
+  const handleGitHubLogin = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      animateButton(e)
+    }
+    setIsLoading(true)
+    try {
+      // Redirigir al endpoint OAuth2 de GitHub en el backend
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+      window.location.href = `${backendUrl}/oauth2/authorize/github`
+    } catch (error) {
+      showError("Error", "Error al iniciar sesión con GitHub")
+      setIsLoading(false)
+    }
+  }
+
+  // Mostrar error de autenticación si existe
+  useEffect(() => {
+    if (authError) {
+      showError("Error de autenticación", authError)
+    }
+  }, [authError])
 
   return (
-    <>
-      {/* Galaxy Spiral Background */}
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
-        <GalaxySpiral />
-      </div>
+    <div className="glass-login-container" style={{ zIndex: 50, position: "relative" }}>
+      <div className="glass-panel-login">
+        {onBack && (
+          <div className="absolute top-4 left-4 z-10">
+            <button 
+              onClick={onBack} 
+              className="glass-back-button flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <svg 
+                className="w-4 h-4" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="text-sm font-semibold">Volver</span>
+            </button>
+          </div>
+        )}
 
-      <div className="glass-room-selection-container">
-        <span className="shine shine-top"></span>
-        <span className="shine shine-bottom"></span>
-        <span className="glow glow-top"></span>
-        <span className="glow glow-bottom"></span>
-        <span className="glow glow-bright glow-top"></span>
-        <span className="glow glow-bright glow-bottom"></span>
-
-      <div className="inner">
-        {/* Logo Section */}
-        <div className="logo-section">
+        <div className="mb-6 text-center">
           <Image
             src="/one-logo.png"
             alt="ONE Logo"
-            width={200}
-            height={100}
-            className="uno-logo"
+            width={320}
+            height={160}
+            className="mx-auto mb-3 drop-shadow-2xl"
+            priority
           />
-          <h1 className="welcome-title">¡A JUGAR!</h1>
+          <h1 className="text-6xl font-bold text-white mb-2">¡Bienvenido!</h1>
+          <p className="text-white/80 text-2xl">Inicia sesión para jugar</p>
         </div>
 
-        {!showJoinRoom ? (
-          <>
-            {/* Main Buttons */}
-            <div className="room-options-container">
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6 max-w-6xl mx-auto">
+          <button
+            className={`flex-1 py-4 px-8 rounded-xl font-bold transition-all duration-500 ease-in-out text-xl whitespace-nowrap flex items-center justify-center min-w-0 ${
+              activeTab === "login"
+                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl border-2 border-orange-400 transform scale-105"
+                : "bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent hover:scale-105"
+            }`}
+            onClick={() => handleTabChange("login")}
+          >
+            Iniciar Sesión
+          </button>
+          <button
+            className={`flex-1 py-4 px-8 rounded-xl font-bold transition-all duration-500 ease-in-out text-xl whitespace-nowrap flex items-center justify-center min-w-0 ${
+              activeTab === "register"
+                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl border-2 border-orange-400 transform scale-105"
+                : "bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent hover:scale-105"
+            }`}
+            onClick={() => handleTabChange("register")}
+          >
+            Registrarse
+          </button>
+        </div>
+
+        {/* Login Form */}
+        {activeTab === "login" && (
+          <div key={`login-${transitionKey}`} className="space-y-4 form-transition">
+            {/* Email and Password in grid for all screen sizes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="glass-input"
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="relative">
+                <Input
+                  type={showLoginPassword ? "text" : "password"}
+                  placeholder="Contraseña"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="glass-input pr-16"
+                  disabled={isLoading}
+                  onKeyPress={(e) => e.key === "Enter" && handleEmailLogin()}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                >
+                  {showLoginPassword ? <EyeOff size={28} /> : <Eye size={28} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Login button centered */}
+            <div className="flex justify-center">
               <Button
+                onClick={handleEmailLogin}
+                className="w-full glass-button-primary py-4 text-lg font-bold rounded-2xl"
                 size="lg"
-                className="room-option-button create-room-button glass-button group"
-                onClick={handleCreateRoom}
                 disabled={isLoading}
               >
-                <Plus className="mr-3 h-8 w-8 transition-transform group-hover:scale-110" />
-                <div className="flex flex-col items-start">
-                  <span className="text-2xl font-bold">
-                    {isLoading ? "CREANDO..." : "CREAR SALA"}
-                  </span>
-                  <span className="text-sm font-normal opacity-90">Inicia un nuevo juego</span>
-                </div>
+                {isLoading ? "Iniciando..." : "Iniciar Sesión"}
               </Button>
+            </div>
 
+            {/* Separator */}
+            <div className="relative flex items-center">
+              <div className="flex-1 border-t-2 border-white/20"></div>
+              <span className="px-4 text-white/60 text-lg">O</span>
+              <div className="flex-1 border-t-2 border-white/20"></div>
+            </div>
+
+            {/* OAuth buttons in grid below */}
+            <div className="grid grid-cols-2 gap-4">
               <Button
-                size="lg"
-                className="room-option-button join-room-button glass-button group"
-                onClick={() => setShowJoinRoom(true)}
+                onClick={handleGoogleLogin}
+                className="w-full py-4 text-lg font-bold rounded-2xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                disabled={isLoading}
               >
-                <LogIn className="mr-3 h-8 w-8 transition-transform group-hover:scale-110" />
-                <div className="flex flex-col items-start">
-                  <span className="text-2xl font-bold">ENTRAR A SALA</span>
-                  <span className="text-sm font-normal opacity-90">Únete a una partida</span>
-                </div>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Google
+              </Button>
+              
+              <Button
+                onClick={handleGitHubLogin}
+                className="w-full py-4 text-lg font-bold rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                disabled={isLoading}
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                GitHub
               </Button>
             </div>
+          </div>
+        )}
 
-            {/* Back Button */}
-            <div className="absolute top-6 left-6 z-10">
-              <button
-                onClick={onBack}
-                className="glass-back-button flex items-center gap-3 px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <ArrowLeft className="w-6 h-6" />
-                <span className="text-xl font-semibold">VOLVER</span>
-              </button>
-            </div>
-          </>
-        ) : !showPrivateCodeInput ? (
-          <>
-            {/* Join Room - Public Rooms List */}
-            <div className="join-room-container fade-in-up">
-              <div className="flex items-center justify-between">
-                <h2 className="section-title">Salas Públicas</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="glass-button text-white"
-                  onClick={loadPublicRooms}
-                  disabled={isLoadingRooms}
-                >
-                  <RefreshCw className={`w-4 h-4 ${isLoadingRooms ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
-
-              {/* Public Rooms List */}
-              <div className="public-rooms-list">
-                {isLoadingRooms ? (
-                  <div className="empty-state">
-                    <RefreshCw className="w-8 h-8 animate-spin text-blue-400" />
-                    <p>Cargando salas...</p>
-                  </div>
-                ) : publicRooms.length === 0 ? (
-                  <div className="empty-state">
-                    <Users className="w-12 h-12 text-gray-400" />
-                    <p>No hay salas públicas disponibles</p>
-                    <p className="text-sm">¡Crea una nueva sala!</p>
-                  </div>
-                ) : (
-                  publicRooms.map((room) => (
-                    <div key={room.code} className="room-card glass-button">
-                      <div className="room-info">
-                        <div className="room-header">
-                          <h3 className="room-name">{room.name || `Sala ${room.code}`}</h3>
-                          <span className="room-code">{room.code}</span>
-                        </div>
-                        <div className="room-details">
-                          <span className="players-count">
-                            <Users className="w-4 h-4" />
-                            {room.players.length}/{room.maxPlayers}
-                          </span>
-                          <span className={`room-status status-${room.status.toLowerCase()}`}>
-                            {room.status === 'WAITING' ? 'Esperando' : room.status === 'IN_GAME' ? 'En juego' : 'Finalizada'}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        className="join-room-btn glass-button"
-                        onClick={() => handleJoinPublicRoom(room)}
-                        disabled={isLoading || room.status !== 'WAITING' || room.players.length >= room.maxPlayers}
-                      >
-                        {room.status !== 'WAITING' ? 'En Juego' :
-                         room.players.length >= room.maxPlayers ? 'Llena' :
-                         'Unirse'}
-                      </Button>
-                    </div>
-                  ))
+        {/* Register Form */}
+        {activeTab === "register" && (
+          <div key={`register-${transitionKey}`} className="space-y-4 form-transition">
+            {/* Email and Username in grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={registerEmail}
+                  onChange={(e) => {
+                    setRegisterEmail(e.target.value)
+                    clearFieldError('email')
+                  }}
+                  className={`glass-input ${validationErrors.email ? 'border-red-500' : ''}`}
+                  disabled={isLoading}
+                />
+                {validationErrors.email && (
+                  <p className="text-red-400 text-sm mt-2 ml-2">{validationErrors.email}</p>
                 )}
               </div>
-
-              {/* Private Code Button */}
-              <Button
-                size="lg"
-                variant="outline"
-                className="private-code-button glass-button group"
-                onClick={() => setShowPrivateCodeInput(true)}
-              >
-                <Lock className="mr-3 h-6 w-6 transition-transform group-hover:scale-110" />
-                <div className="flex flex-col items-start">
-                  <span className="text-xl font-bold">SALA PRIVADA</span>
-                  <span className="text-sm font-normal opacity-90">Ingresar código</span>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="back-from-join-button glass-button bg-transparent text-white mt-3"
-                onClick={() => {
-                  setShowJoinRoom(false)
-                  setPublicRooms([])
-                }}
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                VOLVER
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Join Room - Private Code Input */}
-            <div className="join-room-container fade-in-up">
-              <h2 className="section-title">Sala Privada</h2>
-
-              <div className="form-group">
-                <label className="form-label">Código de Sala</label>
-                <div className="code-input-group">
-                  <Input
-                    type="text"
-                    placeholder="ABC123"
-                    value={roomCode}
-                    onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    maxLength={6}
-                    className="glass-input code-input"
-                  />
-                  <div className="character-count">
-                    {roomCode.length}/6
-                  </div>
-                </div>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Nombre de usuario"
+                  value={registerUsername}
+                  onChange={(e) => {
+                    setRegisterUsername(e.target.value)
+                    clearFieldError('username')
+                  }}
+                  className={`glass-input ${validationErrors.username ? 'border-red-500' : ''}`}
+                  disabled={isLoading}
+                />
+                {validationErrors.username && (
+                  <p className="text-red-400 text-sm mt-2 ml-2">{validationErrors.username}</p>
+                )}
               </div>
-
-              <div className="code-info">
-                <p>Formato: 3 letras + 3 números (ej: ABC123)</p>
-              </div>
-
-              <Button
-                size="lg"
-                className="join-submit-button glass-button bg-blue-600 hover:bg-blue-700 w-full"
-                onClick={handleJoinPrivateRoom}
-                disabled={isLoading}
-              >
-                <span className="text-2xl font-bold">ENTRAR A SALA</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="back-from-join-button glass-button bg-transparent text-white w-full mt-3"
-                onClick={() => {
-                  setShowPrivateCodeInput(false)
-                  setRoomCode("")
-                }}
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                VOLVER
-              </Button>
             </div>
-          </>
+
+            {/* Passwords in grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative">
+                <Input
+                  type={showRegisterPassword ? "text" : "password"}
+                  placeholder="Contraseña (min. 8 caracteres)"
+                  value={registerPassword}
+                  onChange={(e) => {
+                    setRegisterPassword(e.target.value)
+                    clearFieldError('password')
+                    // También limpiar error de confirmación si las contraseñas ya coinciden
+                    if (registerPasswordConfirm && e.target.value === registerPasswordConfirm) {
+                      clearFieldError('confirmPassword')
+                    }
+                  }}
+                  className={`glass-input pr-16 ${validationErrors.password ? 'border-red-500' : ''}`}
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                >
+                  {showRegisterPassword ? <EyeOff size={28} /> : <Eye size={28} />}
+                </button>
+                {validationErrors.password && (
+                  <p className="text-red-400 text-sm mt-2 ml-2">{validationErrors.password}</p>
+                )}
+              </div>
+              <div className="relative">
+                <Input
+                  type={showRegisterPasswordConfirm ? "text" : "password"}
+                  placeholder="Confirmar contraseña"
+                  value={registerPasswordConfirm}
+                  onChange={(e) => {
+                    setRegisterPasswordConfirm(e.target.value)
+                    clearFieldError('confirmPassword')
+                  }}
+                  className={`glass-input pr-16 ${validationErrors.confirmPassword ? 'border-red-500' : ''}`}
+                  disabled={isLoading}
+                  onKeyPress={(e) => e.key === "Enter" && handleRegister()}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPasswordConfirm(!showRegisterPasswordConfirm)}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                >
+                  {showRegisterPasswordConfirm ? <EyeOff size={28} /> : <Eye size={28} />}
+                </button>
+                {validationErrors.confirmPassword && (
+                  <p className="text-red-400 text-sm mt-2 ml-2">{validationErrors.confirmPassword}</p>
+                )}
+              </div>
+            </div>
+            <Button
+              onClick={handleRegister}
+              className="w-full glass-button-primary py-4 text-2xl font-bold rounded-2xl"
+              size="lg"
+              disabled={isLoading}
+            >
+              {isLoading ? "Registrando..." : "Registrarse"}
+            </Button>
+          </div>
         )}
       </div>
-
-      <style jsx>{`
-        .glass-room-selection-container {
-          --hue1: 45;
-          --hue2: 0;
-          --border: 1px;
-          --border-color: hsl(var(--hue2), 12%, 20%);
-          --radius: 22px;
-          --ease: cubic-bezier(0.5, 1, 0.89, 1);
-
-          position: relative;
-          width: 88%;
-          max-width: 680px;
-          min-height: 70vh;
-          max-height: 90vh;
-          display: flex;
-          flex-direction: column;
-          border-radius: var(--radius);
-          border: var(--border) solid var(--border-color);
-          padding: clamp(16px, 2.5%, 24px);
-          background: linear-gradient(
-              235deg,
-              hsl(var(--hue1) 50% 10% / 0.8),
-              hsl(var(--hue1) 50% 10% / 0) 33%
-            ),
-            linear-gradient(
-              45deg,
-              hsl(var(--hue2) 50% 10% / 0.8),
-              hsl(var(--hue2) 50% 10% / 0) 33%
-            ),
-            linear-gradient(hsl(220deg 25% 4.8% / 0.7));
-          backdrop-filter: blur(15px);
-          box-shadow: hsl(var(--hue2) 50% 2%) 0px 10px 16px -8px,
-            hsl(var(--hue2) 50% 4%) 0px 20px 36px -14px;
-          overflow-y: auto;
-          overflow-x: hidden;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-          .glass-room-selection-container {
-            width: 92%;
-            min-height: 75vh;
-            max-height: 92vh;
-            padding: clamp(14px, 3%, 20px);
-          }
-        }
-
-        @media (max-width: 480px) {
-          .glass-room-selection-container {
-            width: 95%;
-            min-height: 82vh;
-            max-height: 95vh;
-            padding: clamp(12px, 3.5%, 18px);
-          }
-        }
-
-        /* Custom scrollbar for main container */
-        .glass-room-selection-container::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .glass-room-selection-container::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .glass-room-selection-container::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 4px;
-        }
-
-        .glass-room-selection-container::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.4);
-        }
-
-        .shine,
-        .glow {
-          --hue: var(--hue1);
-        }
-
-        .shine-bottom,
-        .glow-bottom {
-          --hue: var(--hue2);
-          --conic: 135deg;
-        }
-
-        .shine,
-        .shine::before,
-        .shine::after {
-          pointer-events: none;
-          border-radius: 0;
-          border-top-right-radius: inherit;
-          border-bottom-left-radius: inherit;
-          border: 1px solid transparent;
-          width: 75%;
-          height: auto;
-          min-height: 0px;
-          aspect-ratio: 1;
-          display: block;
-          position: absolute;
-          right: calc(var(--border) * -1);
-          top: calc(var(--border) * -1);
-          left: auto;
-          z-index: 1;
-          --start: 12%;
-          background: conic-gradient(
-            from var(--conic, -45deg) at center in oklch,
-            transparent var(--start, 0%),
-            hsl(var(--hue), var(--sat, 80%), var(--lit, 60%)),
-            transparent var(--end, 50%)
-          ) border-box;
-          mask: linear-gradient(transparent), linear-gradient(black);
-          mask-repeat: no-repeat;
-          mask-clip: padding-box, border-box;
-          mask-composite: subtract;
-          animation: glow 1s var(--ease) both;
-        }
-
-        .shine::before,
-        .shine::after {
-          content: "";
-          width: auto;
-          inset: -2px;
-          mask: none;
-        }
-
-        .shine::after {
-          z-index: 2;
-          --start: 17%;
-          --end: 33%;
-          background: conic-gradient(
-            from var(--conic, -45deg) at center in oklch,
-            transparent var(--start, 0%),
-            hsl(var(--hue), var(--sat, 80%), var(--lit, 85%)),
-            transparent var(--end, 50%)
-          );
-        }
-
-        .shine-bottom {
-          top: auto;
-          bottom: calc(var(--border) * -1);
-          left: calc(var(--border) * -1);
-          right: auto;
-          animation-delay: 0.1s;
-          animation-duration: 1.8s;
-        }
-
-        .glow {
-          pointer-events: none;
-          border-top-right-radius: calc(var(--radius) * 2.5);
-          border-bottom-left-radius: calc(var(--radius) * 2.5);
-          border: calc(var(--radius) * 1.25) solid transparent;
-          inset: calc(var(--radius) * -2);
-          width: 75%;
-          height: auto;
-          min-height: 0px;
-          aspect-ratio: 1;
-          display: block;
-          position: absolute;
-          left: auto;
-          bottom: auto;
-          opacity: 1;
-          filter: blur(12px) saturate(1.25) brightness(0.5);
-          mix-blend-mode: plus-lighter;
-          z-index: 3;
-          animation: glow 1s var(--ease) both;
-          animation-delay: 0.2s;
-        }
-
-        .glow.glow-bottom {
-          inset: calc(var(--radius) * -2);
-          top: auto;
-          right: auto;
-          animation-delay: 0.3s;
-        }
-
-        .glow::before,
-        .glow::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border: inherit;
-          border-radius: inherit;
-          background: conic-gradient(
-            from var(--conic, -45deg) at center in oklch,
-            transparent var(--start, 0%),
-            hsl(var(--hue), var(--sat, 95%), var(--lit, 60%)),
-            transparent var(--end, 50%)
-          ) border-box;
-          mask: linear-gradient(transparent), linear-gradient(black);
-          mask-repeat: no-repeat;
-          mask-clip: padding-box, border-box;
-          mask-composite: subtract;
-          filter: saturate(2) brightness(1);
-        }
-
-        .glow::after {
-          --lit: 70%;
-          --sat: 100%;
-          --start: 15%;
-          --end: 35%;
-          border-width: calc(var(--radius) * 1.75);
-          border-radius: calc(var(--radius) * 2.75);
-          inset: calc(var(--radius) * -0.25);
-          z-index: 4;
-          opacity: 0.75;
-        }
-
-        .glow-bright {
-          --lit: 80%;
-          --sat: 100%;
-          --start: 13%;
-          --end: 37%;
-          border-width: 5px;
-          border-radius: calc(var(--radius) + 2px);
-          inset: -7px;
-          left: auto;
-          filter: blur(2px) brightness(0.66);
-          animation-delay: 0.1s;
-          animation-duration: 1.5s;
-        }
-
-        .glow-bright::after {
-          content: none;
-        }
-
-        .glow-bright.glow-bottom {
-          inset: -7px;
-          right: auto;
-          top: auto;
-          animation-delay: 0.3s;
-          animation-duration: 1.1s;
-        }
-
-        @keyframes glow {
-          0% {
-            opacity: 0;
-          }
-          3% {
-            opacity: 1;
-          }
-          10% {
-            opacity: 0;
-          }
-          12% {
-            opacity: 0.7;
-          }
-          16% {
-            opacity: 0.3;
-            animation-timing-function: var(--ease);
-          }
-          100% {
-            opacity: 1;
-            animation-timing-function: var(--ease);
-          }
-        }
-
-        .inner {
-          position: relative;
-          z-index: 10;
-          display: flex;
-          flex-direction: column;
-          gap: clamp(18px, 3.5%, 28px);
-          min-height: 100%;
-          padding: clamp(8px, 1.5%, 16px) 0;
-        }
-
-        .logo-section {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: clamp(8px, 2%, 14px);
-          text-align: center;
-          margin-bottom: clamp(8px, 1.5%, 12px);
-        }
-
-        .uno-logo {
-          object-fit: contain;
-          filter: drop-shadow(0 5px 15px rgba(255, 140, 0, 0.4));
-          width: clamp(160px, 45%, 200px);
-          height: auto;
-        }
-
-        @media (max-width: 768px) {
-          .uno-logo {
-            width: clamp(140px, 55%, 180px);
-          }
-        }
-
-        .welcome-title {
-          font-size: clamp(1.25rem, 4vw, 1.55rem);
-          font-weight: 700;
-          color: white;
-          letter-spacing: 0.15em;
-          text-shadow: 0 0 20px rgba(255, 140, 0, 0.6),
-                       0 0 40px rgba(255, 69, 0, 0.4),
-                       2px 2px 8px rgba(0, 0, 0, 0.8);
-          white-space: nowrap;
-          margin: 0;
-        }
-
-        .room-options-container {
-          display: flex;
-          flex-direction: column;
-          gap: clamp(14px, 3%, 20px);
-          padding: 0 clamp(8px, 2%, 14px);
-        }
-
-        .room-option-button {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: flex-start !important;
-          width: 100%;
-          padding: clamp(16px, 4%, 22px);
-          border-radius: 14px;
-          background: rgba(0, 0, 0, 0.35) !important;
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 2px solid rgba(255, 255, 255, 0.15) !important;
-          text-align: left;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .room-option-button:hover:not(:disabled) {
-          background: rgba(0, 0, 0, 0.5) !important;
-          border-color: rgba(255, 255, 255, 0.3) !important;
-          transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        }
-
-        .create-room-button {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(5, 150, 105, 0.35)) !important;
-          border-color: rgba(16, 185, 129, 0.6) !important;
-        }
-
-        .create-room-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(16, 185, 129, 0.55), rgba(5, 150, 105, 0.55)) !important;
-          border-color: rgba(16, 185, 129, 0.8) !important;
-          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
-        }
-
-        .join-room-button {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(37, 99, 235, 0.35)) !important;
-          border-color: rgba(59, 130, 246, 0.6) !important;
-        }
-
-        .join-room-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.55), rgba(37, 99, 235, 0.55)) !important;
-          border-color: rgba(59, 130, 246, 0.8) !important;
-          box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
-        }
-
-        .back-button {
-          padding: clamp(12px, 3%, 16px);
-          font-weight: 600;
-          font-size: clamp(0.88rem, 2.4vw, 0.98rem);
-          width: 100%;
-        }
-
-        /* Join Room Styles */
-        .join-room-container {
-          display: flex;
-          flex-direction: column;
-          gap: clamp(16px, 3.5%, 22px);
-          animation: fadeInUp 0.5s ease-in-out forwards;
-          flex: 1;
-          min-height: 0;
-          padding: 0 clamp(8px, 2%, 14px);
-        }
-
-        .section-title {
-          font-size: clamp(1.15rem, 3.2vw, 1.3rem);
-          font-weight: 700;
-          color: white;
-          text-align: center;
-          letter-spacing: 0.08em;
-          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-          margin: 0;
-        }
-
-        /* Public Rooms List */
-        .public-rooms-list {
-          display: flex;
-          flex-direction: column;
-          gap: clamp(10px, 2.5%, 14px);
-          min-height: clamp(240px, 40vh, 320px);
-          max-height: clamp(280px, 48vh, 380px);
-          overflow-y: auto;
-          overflow-x: hidden;
-          padding: clamp(12px, 3%, 18px);
-          background: rgba(0, 0, 0, 0.25);
-          border-radius: 14px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        /* Custom scrollbar styles */
-        .public-rooms-list::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .public-rooms-list::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.08);
-          border-radius: 4px;
-        }
-
-        .public-rooms-list::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 4px;
-        }
-
-        .public-rooms-list::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: clamp(10px, 2.5%, 14px);
-          padding: clamp(32px, 8%, 48px) clamp(16px, 4%, 24px);
-          color: rgba(255, 255, 255, 0.65);
-          text-align: center;
-          min-height: 200px;
-        }
-
-        .empty-state p {
-          margin: 0;
-          font-size: clamp(0.88rem, 2.4vw, 0.98rem);
-        }
-
-        .room-card {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: clamp(14px, 3.5%, 18px);
-          background: rgba(0, 0, 0, 0.45) !important;
-          border: 1px solid rgba(255, 255, 255, 0.25) !important;
-          border-radius: 12px;
-          transition: all 0.25s ease;
-          min-height: 80px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .room-card:hover {
-          background: rgba(0, 0, 0, 0.55) !important;
-          border-color: rgba(255, 255, 255, 0.35) !important;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .room-info {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: clamp(6px, 1.5%, 10px);
-        }
-
-        .room-header {
-          display: flex;
-          align-items: center;
-          gap: clamp(8px, 2%, 12px);
-          flex-wrap: wrap;
-        }
-
-        .room-name {
-          font-size: clamp(0.98rem, 2.6vw, 1.08rem);
-          font-weight: 650;
-          color: white;
-          margin: 0;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-        }
-
-        .room-code {
-          font-size: clamp(0.72rem, 1.9vw, 0.82rem);
-          font-weight: 700;
-          color: rgba(59, 130, 246, 1);
-          background: rgba(59, 130, 246, 0.25);
-          padding: 0.3rem 0.6rem;
-          border-radius: 6px;
-          letter-spacing: 0.08em;
-          box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
-        }
-
-        .room-details {
-          display: flex;
-          align-items: center;
-          gap: clamp(10px, 2.5%, 14px);
-          font-size: clamp(0.84rem, 2.1vw, 0.92rem);
-          color: rgba(255, 255, 255, 0.75);
-        }
-
-        .players-count {
-          display: flex;
-          align-items: center;
-          gap: clamp(4px, 1%, 6px);
-        }
-
-        .room-status {
-          padding: 0.3rem 0.6rem;
-          border-radius: 5px;
-          font-size: clamp(0.72rem, 1.9vw, 0.78rem);
-          font-weight: 650;
-        }
-
-        .status-waiting {
-          background: rgba(16, 185, 129, 0.25);
-          color: rgba(16, 185, 129, 1);
-          box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
-        }
-
-        .status-in_game {
-          background: rgba(251, 191, 36, 0.25);
-          color: rgba(251, 191, 36, 1);
-          box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
-        }
-
-        .status-finished {
-          background: rgba(156, 163, 175, 0.25);
-          color: rgba(156, 163, 175, 1);
-        }
-
-        .join-room-btn {
-          padding: clamp(10px, 2.5%, 14px) clamp(16px, 4%, 22px);
-          font-size: clamp(0.84rem, 2.1vw, 0.92rem);
-          font-weight: 650;
-          background: rgba(59, 130, 246, 0.35) !important;
-          border-color: rgba(59, 130, 246, 0.6) !important;
-          color: white;
-          border-radius: 9px;
-          transition: all 0.25s ease;
-          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
-        }
-
-        .join-room-btn:hover:not(:disabled) {
-          background: rgba(59, 130, 246, 0.55) !important;
-          border-color: rgba(59, 130, 246, 0.8) !important;
-          transform: scale(1.08);
-          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
-        }
-
-        .join-room-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        /* Private Code Button */
-        .private-code-button {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: flex-start !important;
-          width: 100%;
-          padding: clamp(14px, 3.5%, 18px);
-          border-radius: 12px;
-          background: rgba(139, 92, 246, 0.25) !important;
-          border: 2px solid rgba(139, 92, 246, 0.5) !important;
-          color: white;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-        }
-
-        .private-code-button:hover {
-          background: rgba(139, 92, 246, 0.4) !important;
-          border-color: rgba(139, 92, 246, 0.7) !important;
-          transform: translateY(-3px);
-          box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35);
-        }
-
-        /* Form Styles */
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: clamp(8px, 2%, 12px);
-        }
-
-        .form-label {
-          color: white;
-          font-weight: 650;
-          font-size: clamp(0.88rem, 2.4vw, 0.98rem);
-          letter-spacing: 0.06em;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-          margin: 0;
-        }
-
-        .code-input-group {
-          position: relative;
-          width: 100%;
-        }
-
-        .code-input {
-          width: 100%;
-          padding: clamp(14px, 4%, 20px);
-          font-size: clamp(1.2rem, 3vw, 1.4rem);
-          text-align: center;
-          letter-spacing: 0.18em;
-          font-weight: 700;
-          text-transform: uppercase;
-          background: linear-gradient(to bottom, hsl(45 20% 20% / 0.25) 50%, hsl(45 50% 50% / 0.12) 180%);
-          border: 2px solid hsl(0 13% 18.5% / 0.6);
-          border-radius: 12px;
-          color: white;
-          box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .code-input::placeholder {
-          color: rgba(255, 255, 255, 0.45);
-        }
-
-        .code-input:focus {
-          outline: none;
-          border-color: rgba(59, 130, 246, 0.8);
-          box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
-                      inset 0 2px 8px rgba(0, 0, 0, 0.3);
-          background: linear-gradient(to bottom, hsl(45 20% 25% / 0.35) 50%, hsl(45 50% 50% / 0.18) 180%);
-        }
-
-        .character-count {
-          position: absolute;
-          bottom: 0.6rem;
-          right: 1.1rem;
-          font-size: clamp(0.82rem, 2.2vw, 0.9rem);
-          color: rgba(255, 255, 255, 0.65);
-          font-weight: 650;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .code-info {
-          text-align: center;
-          font-size: clamp(0.84rem, 2.1vw, 0.92rem);
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .code-info p {
-          margin: 0;
-        }
-
-        .join-submit-button {
-          width: 100%;
-          padding: clamp(16px, 4%, 22px);
-          font-size: clamp(1.08rem, 3vw, 1.24rem);
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          border-radius: 12px;
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
-        }
-
-        .join-submit-button:hover:not(:disabled) {
-          transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 8px 28px rgba(59, 130, 246, 0.45);
-        }
-
-        .join-submit-button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .back-from-join-button {
-          padding: clamp(12px, 3%, 16px);
-          font-weight: 650;
-          font-size: clamp(0.88rem, 2.4vw, 0.98rem);
-        }
-
-        /* Animations */
-        .fade-in-up {
-          animation: fadeInUp 0.5s ease-in-out forwards;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(25px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        :global(.glass-input) {
-          background: linear-gradient(
-            to bottom,
-            hsl(var(--hue1) 20% 20% / 0.25) 50%,
-            hsl(var(--hue1) 50% 50% / 0.12) 180%
-          );
-          border: 1px solid hsl(var(--hue2) 13% 18.5% / 0.6);
-          color: white;
-        }
-
-        :global(.glass-button) {
-          background: linear-gradient(
-            90deg,
-            hsl(var(--hue1) 29% 13% / 0.55),
-            hsl(var(--hue1) 30% 15% / 0.55) 24% 32%,
-            hsl(var(--hue1) 5% 7% / 0) 95%
-          );
-          border: 1px solid hsl(var(--hue2) 13% 18.5% / 0.35);
-          color: #e2e8f0;
-          transition: all 0.3s ease;
-        }
-
-        :global(.glass-button:hover:not(:disabled)) {
-          color: white;
-          background: linear-gradient(
-            90deg,
-            hsl(var(--hue1) 29% 20% / 0.75),
-            hsl(var(--hue1) 30% 22% / 0.75) 24% 32%,
-            hsl(var(--hue1) 5% 10% / 0.25) 95%
-          );
-        }
-      `}</style>
     </div>
-    </>
   )
 }
