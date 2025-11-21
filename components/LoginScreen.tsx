@@ -243,6 +243,7 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
   return (
     <div className="glass-login-container" style={{ zIndex: 50, position: "relative" }}>
       <div className="glass-panel-login">
+        <div className="mx-auto w-full max-w-4xl">
         {onBack && (
           <div className="absolute top-4 left-4 z-10">
             <button 
@@ -275,23 +276,23 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
           <p className="text-white/80 text-2xl">Inicia sesión para jugar</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6 max-w-6xl mx-auto">
+        {/* Tabs con tamaño uniforme */}
+        <div className="grid grid-cols-2 gap-4 mb-6 max-w-4xl mx-auto">
           <button
-            className={`flex-1 py-4 px-8 rounded-xl font-bold transition-all duration-500 ease-in-out text-xl whitespace-nowrap flex items-center justify-center min-w-0 ${
+            className={`h-16 w-full rounded-2xl font-bold transition-all duration-500 ease-in-out text-2xl flex items-center justify-center ${
               activeTab === "login"
-                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl border-2 border-orange-400 transform scale-105"
-                : "bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent hover:scale-105"
+                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl border-2 border-orange-400"
+                : "bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent"
             }`}
             onClick={() => handleTabChange("login")}
           >
             Iniciar Sesión
           </button>
           <button
-            className={`flex-1 py-4 px-8 rounded-xl font-bold transition-all duration-500 ease-in-out text-xl whitespace-nowrap flex items-center justify-center min-w-0 ${
+            className={`h-16 w-full rounded-2xl font-bold transition-all duration-500 ease-in-out text-2xl flex items-center justify-center ${
               activeTab === "register"
-                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl border-2 border-orange-400 transform scale-105"
-                : "bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent hover:scale-105"
+                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xl border-2 border-orange-400"
+                : "bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent"
             }`}
             onClick={() => handleTabChange("register")}
           >
@@ -338,7 +339,7 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
             <div className="flex justify-center">
               <Button
                 onClick={handleEmailLogin}
-                className="w-full glass-button-primary py-4 text-lg font-bold rounded-2xl"
+                className="w-full h-16 text-2xl font-bold rounded-2xl glass-button-primary"
                 size="lg"
                 disabled={isLoading}
               >
@@ -357,7 +358,7 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
             <div className="grid grid-cols-2 gap-4">
               <Button
                 onClick={handleGoogleLogin}
-                className="w-full py-4 text-lg font-bold rounded-2xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                className="w-full h-16 text-2xl font-bold rounded-2xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                 disabled={isLoading}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
@@ -371,7 +372,7 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
               
               <Button
                 onClick={handleGitHubLogin}
-                className="w-full py-4 text-lg font-bold rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                className="w-full h-16 text-2xl font-bold rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                 disabled={isLoading}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
@@ -478,7 +479,7 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
             </div>
             <Button
               onClick={handleRegister}
-              className="w-full glass-button-primary py-4 text-2xl font-bold rounded-2xl"
+              className="w-full h-16 text-2xl font-bold rounded-2xl glass-button-primary"
               size="lg"
               disabled={isLoading}
             >
@@ -486,6 +487,7 @@ export default function LoginScreen({ onLoginSuccess, onBack }: LoginScreenProps
             </Button>
           </div>
         )}
+        </div>
       </div>
     </div>
   )
