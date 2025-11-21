@@ -74,8 +74,8 @@ export default function RoomPage() {
   }, [])
 
   const handleBack = () => {
-    console.log('👈 [Room Page] Botón volver presionado, navegando a home...')
-    router.push('/')
+    console.log('👈 [Room Page] Botón volver presionado, navegando a room selection...')
+    router.push('/rooms')
   }
 
   const handleStartGame = () => {
