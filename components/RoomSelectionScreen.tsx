@@ -728,10 +728,10 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
         }
 
         .uno-logo {
-          object-fit: contain;
-          filter: drop-shadow(0 5px 15px rgba(255, 140, 0, 0.4));
-          width: clamp(100px, 28%, 120px);
-          height: auto;
+          filter: drop-shadow(0 8px 16px #0000004d) !important;
+          width: 150px !important;
+          height: 120px !important;
+          margin-bottom: 1.5rem !important;
         }
 
         @media (max-width: 768px) {
@@ -747,15 +747,12 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
         }
 
         .welcome-title {
-          font-size: clamp(0.9rem, 2.8vw, 1.1rem);
-          font-weight: 700;
-          color: white;
-          letter-spacing: 0.15em;
-          text-shadow: 0 0 20px rgba(255, 140, 0, 0.6),
-                       0 0 40px rgba(255, 69, 0, 0.4),
-                       2px 2px 8px rgba(0, 0, 0, 0.8);
-          white-space: nowrap;
-          margin: 0;
+          color: #fff !important;
+          text-shadow: 0 4px 8px #00000080 !important;
+          margin: 0 !important;
+          font-size: 4rem !important;
+          font-weight: 700 !important;
+          line-height: 1 !important;
         }
 
         .room-options-container {
