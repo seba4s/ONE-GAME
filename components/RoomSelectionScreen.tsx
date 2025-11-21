@@ -453,7 +453,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           position: relative;
           width: 55%;
           max-width: 450px;
-          min-height: 50vh;
+          min-height: 55vh;
           max-height: 85vh;
           display: flex;
           flex-direction: column;
