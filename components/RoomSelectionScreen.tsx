@@ -451,8 +451,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           --ease: cubic-bezier(0.5, 1, 0.89, 1);
 
           position: relative;
-          width: 90%;
-          max-width: 520px;
+          width: 55%;
+          max-width: 450px;
           min-height: 50vh;
           max-height: 85vh;
           display: flex;
@@ -479,9 +479,16 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
         }
 
         /* Responsive adjustments */
+        @media (max-width: 1024px) {
+          .glass-room-selection-container {
+            width: 75%;
+            max-width: 500px;
+          }
+        }
+
         @media (max-width: 768px) {
           .glass-room-selection-container {
-            width: 92%;
+            width: 85%;
             max-width: 480px;
             min-height: 55vh;
             max-height: 88vh;
