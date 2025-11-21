@@ -725,7 +725,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           gap: clamp(4px, 1%, 6px);
           text-align: center;
           margin-bottom: 0;
-          margin-top: clamp(4px, 1%, 8px);
+          margin-top: -10px;
           margin-left: auto;
           margin-right: auto;
           width: 320px !important;
