@@ -82,7 +82,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
           {/* Header */}
           <div className="flex items-center justify-between mb-8 relative z-10">
-            <h2 className="text-3xl font-bold text-white tracking-wide">SETTINGS</h2>
+            <h2 className="text-3xl font-bold text-white tracking-wide">CONFIGURACIÓN</h2>
             <Button 
               onClick={onClose}
               size="sm" 
@@ -99,7 +99,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Master Volume */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-white font-medium">Master Volume</label>
+                <label className="text-white font-medium">Volumen Master</label>
                 <span className="text-white/70">{masterVolume}%</span>
               </div>
               <input
@@ -114,7 +114,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Sound Effects Toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-white font-medium">Sound Effects</label>
+              <label className="text-white font-medium">Efectos de Sonido</label>
               <Button
                 onClick={() => setAudioSoundEffects(!soundEffects)}
                 className={`glass-button ${soundEffects ? 'glass-button-primary' : 'glass-button-secondary'} px-4 py-2`}
@@ -125,7 +125,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Background Music Toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-white font-medium">Background Music</label>
+              <label className="text-white font-medium">Música de Fondo</label>
               <Button
                 onClick={() => setAudioBackgroundMusic(!backgroundMusic)}
                 className={`glass-button ${backgroundMusic ? 'glass-button-primary' : 'glass-button-secondary'} px-4 py-2`}
@@ -136,7 +136,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
             {/* Card Sounds Toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-white font-medium">Card Sounds</label>
+              <label className="text-white font-medium">Sonidos de Cartas</label>
               <Button
                 onClick={() => setAudioCardSounds(!cardSounds)}
                 className={`glass-button ${cardSounds ? 'glass-button-primary' : 'glass-button-secondary'} px-4 py-2`}
@@ -154,7 +154,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             {/* Brightness */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-white font-medium">Brightness</label>
+                <label className="text-white font-medium">Brillo</label>
                 <span className="text-white/70">{brightness}%</span>
               </div>
               <input
@@ -173,7 +173,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 onClick={saveSettings}
                 className="glass-button glass-button-primary w-full py-3"
               >
-                SAVE SETTINGS
+                GUARDAR CONFIGURACIÓN
               </Button>
             </div>
           </div>
