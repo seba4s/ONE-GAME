@@ -254,7 +254,6 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
             height={75}
             className="uno-logo"
           />
-          <h1 className="welcome-title">¡A JUGAR!</h1>
         </div>
 
         {!showJoinRoom ? (
@@ -729,8 +728,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
 
         .uno-logo {
           filter: drop-shadow(0 8px 16px #0000004d) !important;
-          width: 150px !important;
-          height: 120px !important;
+          width: 269px !important;
+          height: 188px !important;
           margin-bottom: 1.5rem !important;
         }
 
@@ -760,7 +759,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           flex-direction: column;
           gap: clamp(8px, 2%, 12px);
           padding: 0 clamp(6px, 1.5%, 10px);
-          margin-top: clamp(6px, 1.5%, 10px);
+          margin-top: -20px;
         }
 
         .room-option-button {
