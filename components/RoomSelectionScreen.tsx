@@ -450,9 +450,10 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           --radius: 22px;
           --ease: cubic-bezier(0.5, 1, 0.89, 1);
 
-          position: relative;
-          width: 55%;
-          max-width: 450px;
+          z-index: 10 !important;
+          width: 55% !important;
+          max-width: none !important;
+          position: relative !important;
           min-height: 55vh;
           max-height: 85vh;
           display: flex;
