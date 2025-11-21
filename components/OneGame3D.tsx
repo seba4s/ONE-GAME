@@ -499,6 +499,7 @@ export default function OneGame3D({ onBack }: OneGame3DProps) {
         <aside className="right-sidebar">
           {shouldCallUno && (
             <div className="uno-container">
+              <div className="uno-alert">¡Grita UNO antes de jugar!</div>
               <button className="uno-button-image" onClick={handleCallOne}>
                 <img
                   src="/uno-logo.png"
