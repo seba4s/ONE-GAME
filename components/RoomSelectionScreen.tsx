@@ -250,8 +250,8 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           <Image
             src="/one-logo.png"
             alt="ONE Logo"
-            width={200}
-            height={100}
+            width={150}
+            height={75}
             className="uno-logo"
           />
           <h1 className="welcome-title">¡A JUGAR!</h1>
@@ -712,41 +712,42 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           z-index: 10;
           display: flex;
           flex-direction: column;
-          gap: clamp(12px, 2.5%, 18px);
+          gap: clamp(8px, 1.8%, 12px);
           min-height: 100%;
-          padding: clamp(6px, 1%, 10px) 0;
+          padding: clamp(8px, 1.5%, 12px) 0;
         }
 
         .logo-section {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: clamp(6px, 1.5%, 10px);
+          gap: clamp(4px, 1%, 6px);
           text-align: center;
-          margin-bottom: clamp(4px, 1%, 8px);
+          margin-bottom: 0;
+          margin-top: clamp(4px, 1%, 8px);
         }
 
         .uno-logo {
           object-fit: contain;
           filter: drop-shadow(0 5px 15px rgba(255, 140, 0, 0.4));
-          width: clamp(130px, 35%, 160px);
+          width: clamp(100px, 28%, 120px);
           height: auto;
         }
 
         @media (max-width: 768px) {
           .uno-logo {
-            width: clamp(110px, 40%, 140px);
+            width: clamp(90px, 35%, 110px);
           }
         }
 
         @media (max-width: 480px) {
           .uno-logo {
-            width: clamp(100px, 45%, 130px);
+            width: clamp(85px, 40%, 100px);
           }
         }
 
         .welcome-title {
-          font-size: clamp(1.1rem, 3.5vw, 1.35rem);
+          font-size: clamp(0.9rem, 2.8vw, 1.1rem);
           font-weight: 700;
           color: white;
           letter-spacing: 0.15em;
@@ -760,8 +761,9 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
         .room-options-container {
           display: flex;
           flex-direction: column;
-          gap: clamp(10px, 2.5%, 16px);
+          gap: clamp(8px, 2%, 12px);
           padding: 0 clamp(6px, 1.5%, 10px);
+          margin-top: clamp(6px, 1.5%, 10px);
         }
 
         .room-option-button {
@@ -769,7 +771,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
           align-items: center !important;
           justify-content: flex-start !important;
           width: 100%;
-          padding: clamp(12px, 3%, 16px);
+          padding: clamp(10px, 2.5%, 14px);
           border-radius: 12px;
           background: rgba(0, 0, 0, 0.35) !important;
           color: white;
@@ -783,7 +785,7 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
 
         @media (max-width: 768px) {
           .room-option-button {
-            padding: clamp(10px, 2.5%, 14px);
+            padding: clamp(8px, 2%, 12px);
           }
         }
 
