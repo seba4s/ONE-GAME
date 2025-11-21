@@ -802,41 +802,19 @@
 }
 
 /* Tamaños de texto dinámicos */
-.text-size-pequeño {
-  font-size: 14px;
-}
+/* Text size classes (English). App now defaults to small. */
+.text-size-small { font-size: 14px; }
+.text-size-small .glass-menu-card { font-size: 14px; }
+.text-size-small button { font-size: 12px; }
 
-.text-size-pequeño .glass-menu-card {
-  font-size: 14px;
-}
+/* Keeping medium/large for possible future use */
+.text-size-medium { font-size: 16px; }
+.text-size-medium .glass-menu-card { font-size: 16px; }
+.text-size-medium button { font-size: 14px; }
 
-.text-size-pequeño button {
-  font-size: 12px;
-}
-
-.text-size-mediano {
-  font-size: 16px;
-}
-
-.text-size-mediano .glass-menu-card {
-  font-size: 16px;
-}
-
-.text-size-mediano button {
-  font-size: 14px;
-}
-
-.text-size-grande {
-  font-size: 18px;
-}
-
-.text-size-grande .glass-menu-card {
-  font-size: 18px;
-}
-
-.text-size-grande button {
-  font-size: 16px;
-}
+.text-size-large { font-size: 18px; }
+.text-size-large .glass-menu-card { font-size: 18px; }
+.text-size-large button { font-size: 16px; }
 
 /* Transición suave para cambios de sección */
 .form-transition {
