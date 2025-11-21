@@ -191,43 +191,80 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
     // PRIORITY 2: Calculate locally if backend doesn't provide them
     else {
       console.log('⚠️ Backend did not send playableCardIds, calculating locally');
+      console.log('🔍 DEBUG INFO:');
+      console.log('   - stackingCount from backend:', backendState.stackingCount);
+      console.log('   - topCard:', topCard);
+      console.log('   - hand length:', hand.length);
 
       const stackActive = (backendState.stackingCount || 0) > 0;
+      console.log('   - stackActive calculated as:', stackActive);
 
       if (topCard && hand.length > 0) {
-        for (const card of hand) {
+        console.log('🎯 TOP CARD DETAILS:');
+        console.log('   - id:', topCard.id);
+        console.log('   - color:', topCard.color, '(type:', typeof topCard.color + ')');
+        console.log('   - type:', topCard.type, '(type:', typeof topCard.type + ')');
+        console.log('   - value:', topCard.value, '(type:', typeof topCard.value + ')');
+
+        console.log('🃏 ANALYZING EACH CARD IN HAND:');
+        for (let i = 0; i < hand.length; i++) {
+          const card = hand[i];
+          console.log(`\n   Card ${i + 1}/${hand.length}:`);
+          console.log('   - id:', card.id);
+          console.log('   - color:', card.color, '(type:', typeof card.color + ')');
+          console.log('   - type:', card.type, '(type:', typeof card.type + ')');
+          console.log('   - value:', card.value, '(type:', typeof card.value + ')');
+
           // STACKING LOGIC: If there's a stack, only +2 or +4 can be played
           if (stackActive) {
+            console.log('   - Stack is ACTIVE, checking if DRAW_TWO or WILD_DRAW_FOUR...');
             if (card.type === 'DRAW_TWO' || card.type === 'WILD_DRAW_FOUR') {
+              console.log('   ✅ PLAYABLE - is draw card');
               playableCardIds.push(card.id);
+            } else {
+              console.log('   ❌ NOT PLAYABLE - not a draw card');
             }
           }
           // NORMAL LOGIC: Regular UNO rules
           else {
+            console.log('   - Stack is NOT active, checking normal UNO rules...');
+
             // Wild cards can always be played
             if (card.type === 'WILD' || card.type === 'WILD_DRAW_FOUR' || card.color === 'WILD') {
+              console.log('   ✅ PLAYABLE - is WILD card');
               playableCardIds.push(card.id);
             }
             // Card matches color
             else if (card.color === topCard.color) {
+              console.log('   ✅ PLAYABLE - color matches (' + card.color + ' === ' + topCard.color + ')');
               playableCardIds.push(card.id);
             }
             // Card matches value (only for NUMBER cards)
             else if (card.type === 'NUMBER' && topCard.type === 'NUMBER' && card.value === topCard.value) {
+              console.log('   ✅ PLAYABLE - value matches (' + card.value + ' === ' + topCard.value + ')');
               playableCardIds.push(card.id);
             }
             // Card matches type (for special cards: SKIP, REVERSE, DRAW_TWO)
             else if (card.type === topCard.type && card.type !== 'NUMBER') {
+              console.log('   ✅ PLAYABLE - type matches (' + card.type + ' === ' + topCard.type + ')');
               playableCardIds.push(card.id);
+            }
+            else {
+              console.log('   ❌ NOT PLAYABLE - no match');
+              console.log('      - color match? ' + card.color + ' === ' + topCard.color + ' = ' + (card.color === topCard.color));
+              console.log('      - value match? ' + card.value + ' === ' + topCard.value + ' = ' + (card.value === topCard.value));
+              console.log('      - type match? ' + card.type + ' === ' + topCard.type + ' = ' + (card.type === topCard.type));
             }
           }
         }
       } else if (hand.length > 0) {
         // No top card yet, allow all cards
+        console.log('⚠️ No top card, allowing all cards');
         playableCardIds.push(...hand.map(c => c.id));
       }
 
       console.log('📝 Calculated playableCardIds locally:', playableCardIds.length, 'cards');
+      console.log('📋 Playable card IDs:', playableCardIds);
     }
 
     // CRITICAL: Backend now uses 'clockwise' boolean instead of 'direction' string
@@ -289,6 +326,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
     console.log('      - players:', payload.players?.length);
     console.log('      - currentPlayerId:', payload.currentPlayerId);
     console.log('      - topCard:', payload.topCard);
+    console.log('      - playableCardIds:', payload.playableCardIds);
 
     // Transform backend response to frontend GameState format
     console.log('   🔄 Llamando transformBackendGameState...');
@@ -691,7 +729,12 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
   }, []);
 
   const handleCardPlayed = useCallback((payload: any) => {
-    console.log('🃏 Carta jugada:', payload);
+    console.log('🃏 ========== CARD PLAYED EVENT ==========');
+    console.log('   📥 Payload:', payload);
+    console.log('   👤 Player:', payload.playerNickname);
+    console.log('   🎴 Card:', payload.card?.color, payload.card?.type, payload.card?.value);
+    console.log('   ⏱️ Expecting TURN_CHANGED event next...');
+    console.log('========================================');
 
     // Agregar al historial de movimientos
     const move: GameMove = {
@@ -719,8 +762,24 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
   }, []);
 
   const handleTurnChanged = useCallback((payload: any) => {
-    console.log('🔄 Turno cambiado:', payload);
-    setGameState(prev => prev ? { ...prev, currentTurnPlayerId: payload.currentPlayerId } : null);
+    console.log('🔄 ========== TURN CHANGED EVENT ==========');
+    console.log('   📥 Payload:', payload);
+    console.log('   👤 New current player ID:', payload.currentPlayerId);
+    console.log('   🔄 Updating gameState.currentTurnPlayerId...');
+
+    setGameState(prev => {
+      if (!prev) {
+        console.log('   ❌ No previous state, cannot update');
+        return null;
+      }
+
+      console.log('   📊 Previous currentTurnPlayerId:', prev.currentTurnPlayerId);
+      console.log('   📊 New currentTurnPlayerId:', payload.currentPlayerId);
+      console.log('   ✅ Turn updated successfully');
+      console.log('========================================');
+
+      return { ...prev, currentTurnPlayerId: payload.currentPlayerId };
+    });
   }, []);
 
   const handleUnoCall = useCallback((payload: any) => {
@@ -1174,7 +1233,12 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children, onKicked, 
 
   const playCard = useCallback((cardId: string, chosenColor?: string) => {
     if (wsServiceRef.current?.isConnected()) {
-      console.log('🃏 Jugando carta:', cardId, chosenColor);
+      console.log('🎴 ========== PLAYING CARD ==========');
+      console.log('   🃏 Card ID:', cardId);
+      console.log('   🎨 Chosen color:', chosenColor || 'N/A');
+      console.log('   📤 Sending to backend...');
+      console.log('   ⏱️ Waiting for CARD_PLAYED + TURN_CHANGED events...');
+      console.log('========================================');
       wsServiceRef.current.playCard(cardId, chosenColor);
     } else {
       console.warn('⚠️ No conectado al WebSocket');
