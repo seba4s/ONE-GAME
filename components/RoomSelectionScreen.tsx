@@ -429,7 +429,9 @@ export default function RoomSelectionScreen({ onCreateRoom, onJoinRoomSuccess, o
                 className="back-from-join-button glass-button bg-transparent text-white w-full mt-3"
                 onClick={() => {
                   setShowPrivateCodeInput(false)
+                  setShowJoinRoom(false)
                   setRoomCode("")
+                  setPublicRooms([])
                 }}
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
