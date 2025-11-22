@@ -5,7 +5,7 @@
  * Maneja mensajes de éxito, error, advertencia e información
  */
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { Notification } from '@/types/game.types';
 
 // ============================================
@@ -31,9 +31,27 @@ const NotificationContext = createContext<NotificationContextValue | null>(null)
 
 export const useNotification = () => {
   const context = useContext(NotificationContext);
+
+  // Durante SSR o si no hay provider, devolver valores por defecto
   if (!context) {
-    throw new Error('useNotification debe usarse dentro de un NotificationProvider');
+    // En desarrollo, advertir pero no fallar
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      console.warn('useNotification called outside NotificationProvider, returning defaults');
+    }
+
+    // Devolver valores por defecto seguros para SSR
+    return {
+      notifications: [],
+      addNotification: () => '',
+      removeNotification: () => {},
+      success: () => {},
+      error: () => {},
+      info: () => {},
+      warning: () => {},
+      clearAll: () => {},
+    };
   }
+
   return context;
 };
 
@@ -51,6 +69,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   // ============================================
   // FUNCTIONS
   // ============================================
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
 
   const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
     const id = `notification_${Date.now()}_${Math.random()}`;
@@ -70,11 +92,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
 
     return id;
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
+  }, [removeNotification]);
 
   const success = useCallback(
     (title: string, message: string, duration?: number) => {
@@ -132,7 +150,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   // CONTEXT VALUE
   // ============================================
 
-  const value: NotificationContextValue = {
+  const value: NotificationContextValue = useMemo(() => ({
     notifications,
     addNotification,
     removeNotification,
@@ -141,7 +159,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     info,
     warning,
     clearAll,
-  };
+  }), [
+    notifications,
+    addNotification,
+    removeNotification,
+    success,
+    error,
+    info,
+    warning,
+    clearAll,
+  ]);
 
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 };
